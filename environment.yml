@@ -1,0 +1,14 @@
+name: lcdm-plus-s
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - numpy>=1.26
+  - scipy>=1.11
+  - sympy>=1.12
+  - pyyaml>=6.0
+  - matplotlib>=3.8
+  - pytest>=8.0
+  - pip
+  - pip:
+      - -e .[app]

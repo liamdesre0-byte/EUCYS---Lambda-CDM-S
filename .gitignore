@@ -1,0 +1,47 @@
+# Bytecode / caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Solver / MCMC outputs (regenerate locally)
+theory_export/
+lcdms_validation_out/
+results/
+figures/*.png
+figures/*.pdf
+figures/generated_captions.md
+*.lprof
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Secrets (none expected; keep the pattern)
+.env
+.env.*
+credentials.json
+*.pem
+
+# Large local data (do not commit survey catalogs)
+data/*.csv
+data/*.fits
+data/*.tar
+data/*.gz
+!data/README.md

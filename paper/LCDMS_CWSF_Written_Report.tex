@@ -1,0 +1,686 @@
+% ============================================================
+% ΛCDM+S: CWSF Written Report (science-fair version)
+% Paste into Overleaf and compile with pdfLaTeX.
+% ============================================================
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage{hyperref}
+
+\setstretch{1.25}
+\setlength{\parskip}{0.28em}
+\setlength{\parindent}{1.5em}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black
+}
+
+\newcommand{\Lcdms}{$\Lambda$CDM+S}
+\newcommand{\tcrit}{t_{\mathrm{crit}}}
+
+\title{%
+  \textbf{\Lcdms: Does Extra Physics Help Fit the Universe?}\\[0.4em]
+  \large A Computational Test of a Four-Parameter Cosmology Model\\
+  Using Bayesian Inference
+}
+\author{Liam Desre}
+\date{2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The standard model of cosmology, $\Lambda$CDM, describes a universe that
+contains matter, radiation, and a constant dark-energy term $\Lambda$.
+This project tests a closely related model called \Lcdms. The extra
+``S'' is a smooth switch that turns the dark-energy term on over cosmic
+time, instead of assuming it was always fully present. The physics of
+that switch is locked in a separate theory file. This report is about
+the computing test: I built a pipeline that predicts distances and
+expansion rates, compares those predictions with supernovae, BAO, and
+compressed CMB data, and then asks whether the two extra parameters are
+worth the extra complexity.
+
+I sampled four numbers---today's expansion rate $H_0$, today's dark-energy
+fraction $\Omega_\Lambda$, a switch speed $k$, and a midpoint time
+$\tcrit$---with Markov chain Monte Carlo. Nested sampling estimated the
+Bayesian evidence. A recovery test showed that when the switch is turned
+off, the code reproduces flat $\Lambda$CDM to better than one part in
+$10^4$. On a published DES supernova comparison, \Lcdms\ fits the
+points a little better ($\Delta\chi^2=-2.5$), but the usual complexity
+penalties and the published evidence ratio still favour ordinary
+$\Lambda$CDM. The computing stack therefore does what it is supposed to
+do: it tests the model against data without claiming that a random walk
+``proved'' the underlying physics.
+\end{abstract}
+
+
+%------------------------------------------------------------------------------
+\section{Introduction}
+%------------------------------------------------------------------------------
+
+Most science-fair projects measure something in a lab. This one measures
+a model. Cosmologists already have a successful recipe for the expanding
+universe, called $\Lambda$CDM. It says that the universe is mostly dark
+energy ($\Lambda$), plus cold dark matter and ordinary matter, and that
+space is close to flat. That recipe fits a huge range of observations,
+from nearby supernovae to the cosmic microwave background.
+
+It is not perfect. Different experiments disagree about how fast the
+universe is expanding today (the Hubble tension). There is also a
+deeper conceptual question: why should $\Lambda$ be a fixed number that
+was already sitting in the equations from the beginning? \Lcdms\ is a
+proposed answer to the second question. In the theory layer of this
+project, horizon entropy and a maximum-entropy endpoint are used to
+argue that the expansion should settle toward a de~Sitter state---a
+universe that expands at a constant rate. The computing layer does
+\emph{not} re-derive that argument. It asks a more modest question:
+
+\begin{quote}
+If I allow dark energy to turn on smoothly, with two extra numbers
+controlling the switch, do today's data prefer that story over ordinary
+$\Lambda$CDM?
+\end{quote}
+
+That is a statistics problem, not a chalkboard-physics problem. The
+honest way to answer it is to lock the physics, predict observables,
+fit the data, and then penalize the extra freedom. This report
+describes that pipeline in language a judge can follow, with only a
+few equations.
+
+%------------------------------------------------------------------------------
+\section{Purpose and hypothesis}
+%------------------------------------------------------------------------------
+
+\paragraph{Purpose.}
+Build and audit a complete inference stack for \Lcdms, then use it to
+compare the model with $\Lambda$CDM on the same public datasets.
+
+\paragraph{Hypothesis.}
+If the extra switch is a real improvement, then after a fair
+complexity penalty the data should prefer \Lcdms. If the extra
+parameters only buy a slightly better curve-fit, information criteria
+and Bayesian evidence should still prefer $\Lambda$CDM.
+
+\paragraph{What this project is not.}
+It is not a proof of Einstein's equation. It is not a claim that
+``MCMC proved the attractor.'' Markov chain Monte Carlo only maps which
+values of four parameters are allowed by the data. Nested sampling
+estimates how much probability mass the whole model has, not whether
+the second law of thermodynamics equals cosmic acceleration.
+
+%------------------------------------------------------------------------------
+\section{Background}
+%------------------------------------------------------------------------------
+
+\subsection{The standard picture in one page}
+
+Imagine the universe as a balloon with dots on it. As the balloon
+inflates, every pair of dots moves apart. The Hubble parameter $H$ is
+the expansion rate. Redshift $z$ tells us how much light has been
+stretched since it was emitted; larger $z$ means earlier times.
+Supernovae give a distance-versus-redshift diagram. Baryon acoustic
+oscillations (BAO) give a standard ruler in the galaxy distribution.
+The cosmic microwave background (CMB) is leftover light from when the
+universe was about 380{,}000 years old.
+
+In flat $\Lambda$CDM, three ingredients set the expansion: radiation
+(important early on), matter (which clumps), and a constant dark-energy
+density (which dominates late). Today's matter fraction is then just
+whatever is left after you choose today's dark-energy fraction.
+
+\subsection{What ``+S'' adds}
+
+\Lcdms\ keeps the same three ingredients, but multiplies the dark-energy
+term by a fraction $\chi(t)$ that starts near zero and later approaches
+one. Think of a dimmer switch, not an on/off light. The switch has a
+speed $k$ and a midpoint time $\tcrit$ (the moment when the dimmer is
+halfway up). When $k$ is sent to zero, the dimmer is stuck at fully on,
+and the model must collapse back to ordinary $\Lambda$CDM. That recovery
+is a computing test: if it fails, the code is not an extension of
+$\Lambda$CDM and no posterior should be trusted.
+
+The theory file also produces a thermodynamic equation of state for the
+entropy sector. Computing treats that as a derived background array. It
+is not a fifth sampled parameter.
+
+\subsection{Bayesian inference without the jargon pile-up}
+
+Three ingredients go into a Bayesian fit.
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Prior.} What I believed about the four numbers
+        \emph{before} looking at the likelihood. Here the priors are
+        independent Gaussians (bell curves) whose widths come from
+        mixing published $H_0$ information and from the switch timescale.
+  \item \textbf{Likelihood.} How well a predicted catalogue matches the
+        real catalogue, including measurement errors and, when
+        available, covariance matrices.
+  \item \textbf{Posterior.} The update: prior times likelihood. MCMC
+        draws samples from that surface. Nested sampling integrates it
+        to get the evidence $Z$, which is the right quantity for
+        ``which model is better overall?''
+\end{enumerate}
+
+A better raw $\chi^2$ is not enough. Extra parameters can always hug
+the points more tightly. AIC and BIC add a complexity fine. Evidence
+goes further: it averages the likelihood over the whole prior, so a
+model that only fits in a tiny corner of parameter space is
+automatically down-weighted.
+
+%------------------------------------------------------------------------------
+\section{The model, in the few equations that matter}
+%------------------------------------------------------------------------------
+
+The computer only varies four numbers:
+\begin{equation}
+  \theta = (H_0,\; \Omega_\Lambda,\; k,\; \tcrit).
+\end{equation}
+Radiation today is held fixed. Matter today is whatever is left:
+$\Omega_{m,0}=1-\Omega_\Lambda-\omega_{r,0}$. The dimmer has a closed
+form, so it is never itself integrated:
+\begin{equation}
+  \chi(t)=\bigl[1+e^{-k(t-\tcrit)}\bigr]^{-1}.
+\end{equation}
+At $t=\tcrit$ the switch is exactly one half. The expansion history is
+then
+\begin{equation}
+  E^2(a)=\Omega_{r,0}\,a^{-4}+\Omega_{m,0}\,a^{-3}
+  +\Omega_\Lambda\,\chi(t)/\chi_0,
+\end{equation}
+where $a=1/(1+z)$ is the scale factor and $\chi_0$ is the value of the
+switch today, iterated so that $H(a=1)$ equals the sampled $H_0$.
+
+That is the entire phenomenological layer the sampler is allowed to
+see. Everything else---distances, supernova magnitudes, BAO ratios,
+compressed CMB quantities---is computed from this background.
+
+%------------------------------------------------------------------------------
+\section{Materials}
+%------------------------------------------------------------------------------
+
+\subsection{Software}
+
+The stack has three layers, plus this report.
+
+\begin{itemize}[leftmargin=1.6em]
+  \item \textbf{Layer 1 --- theory.} \texttt{analytical\_solver.py}
+        locks the horizon-thermodynamics argument and exports the
+        attractor. Inference is forbidden from refitting that attractor.
+  \item \textbf{Layer 2 --- Boltzmann.} \texttt{Modified\_CLASS.py}
+        is the production Einstein--Boltzmann code. Full CMB power
+        spectra live here, not in the sampler.
+  \item \textbf{Layer 3 --- inference.} \texttt{Bayesian\_Validationn.py}
+        is the production engine: priors, datasets, likelihoods, MCMC,
+        nested sampling, diagnostics, plots, and a reproducibility
+        snapshot.
+  \item \textbf{Layer 3b --- audit.} \texttt{computing\_validation.py}
+        checks that the stack is wired correctly and exports this
+        manuscript.
+\end{itemize}
+
+The default production sampler is a standard-library Markov chain.
+Cobaya can be attached as an optional backend; it never owns the
+Friedmann equation. Hamiltonian Monte Carlo is declared in the
+architecture and raises an error if requested. I did not use it.
+
+A Streamlit booth app can replay a precomputed cartoon of the sampler
+and a live $\Delta\chi^2$ scoreboard. That dashboard is a visual aid.
+It is not the production inference engine.
+
+\subsection{Data}
+
+Production inference uses public cosmological probes, not synthetic
+demo catalogues. Table~\ref{tab:probes} lists the rows the likelihood
+knows how to load. Supernova CSVs are read from a \texttt{--data-dir}
+folder. Production mode refuses fake posteriors.
+
+\begin{table}[H]
+\centering
+\caption{MCMC probes used by the joint likelihood. Counts are the
+inference sizes stored in the dataset registry, not a claim that every
+row was used in every run.}
+\label{tab:probes}
+\begin{tabular}{llp{0.46\textwidth}}
+\toprule
+Key & Typical $n$ & What it measures \\
+\midrule
+Pantheon+      & 1550        & Type~Ia supernova distance moduli $\mu(z)$ \\
+DES-SN Y5      & 1635        & Independent SN $\mu(z)$ (cross-check) \\
+SH0ES          & 1--40       & Local $H_0$ calibration \\
+DESI DR2       & $\sim$10--20 & BAO ratios $D_M/r_d$, $D_H/r_d$, $D_V/r_d$ \\
+BOSS DR12      & $\sim$6--12  & Earlier BAO / RSD \\
+Planck (compressed) & 3    & Distance priors $(R,\ell_A,\omega_b)$ \\
+SPARC / WMAP   & optional    & Rotation curves / multipoles \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A separate object-count inventory (Type~Ia supernovae, galaxies,
+weak-lensing sources, and so on) describes the broader compilation.
+Those headline counts are not extra likelihood terms.
+
+%------------------------------------------------------------------------------
+\section{Methods}
+%------------------------------------------------------------------------------
+
+The work follows a one-way pipeline. Later steps consume earlier
+products. Nothing in this list derives Einstein's equation.
+
+\subsection{Lock the physics, then choose what to sample}
+
+I first ran the theory solver and treated its attractor as an input.
+The computer is not allowed to refit the late-time Hubble floor
+$H_\infty$. I then froze the inference vector to the four numbers in
+Section~4. $S_{\max}$ and the early entropy are not sampled.
+
+\subsection{Priors, before any data}
+
+Each parameter gets an independent Gaussian prior
+(Table~\ref{tab:priors}). The $H_0$ and $\Omega_\Lambda$ widths come
+from algebraic Hubble mixing plus a Planck sound-horizon anchor. The
+$k$ and $\tcrit$ widths come from the switch itself: $k$ sets the
+transition time $1/k$, and $\tcrit$ is the halfway point.
+
+\begin{table}[H]
+\centering
+\caption{Table~1 Gaussian priors. These are beliefs \emph{before} the
+likelihood, not posterior results.}
+\label{tab:priors}
+\begin{tabular}{lrrl}
+\toprule
+Parameter & Centre $\mu$ & Width $\sigma$ & Origin \\
+\midrule
+$H_0$          & 72.8  & 2.059 & mixing + Planck anchor \\
+$\Omega_\Lambda$ & 0.685 & 0.012 & mixing; today's entropy density \\
+$k$            & 0.37  & 0.068 & switch speed (Gyr$^{-1}$) \\
+$\tcrit$       & 15.8  & 1.408 & halfway time (Gyr) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Before MCMC, I drew parameters from this prior alone and generated
+ensembles of $H(z)$ and the deceleration history. That prior-predictive
+check asks a simple question: does the prior already forbid a late-time
+de~Sitter limit? If it did, the later posterior would be untrustworthy
+for the wrong reason.
+
+\subsection{Predict the sky from four numbers}
+
+For each trial $\theta$ the background integrator solves for cosmic
+time as a function of $\ln a$ with classical Runge--Kutta (RK4),
+typically 8000 steps from $a=10^{-3}$ to today. Time is the unknown;
+scale factor is the independent variable, so $H(z)$ comes out natively.
+A short outer loop updates $\chi_0$ three times so that today's Hubble
+rate matches $H_0$ exactly.
+
+Distances are then quadratures of $c/H(z)$. I used composite Simpson's
+rule (even number of steps), not a cubic spline, because extra
+smoothing would leak into $\chi^2$. From the comoving distance come
+the luminosity distance, the distance modulus $\mu$ used by supernovae,
+and the BAO combinations $D_M$, $D_H$, and $D_V$.
+
+A theory facade called \texttt{ModifiedCLASS} is the only cosmology
+surface the sampler may call. It always runs in the same order:
+background, then a small set of Newtonian perturbation modes, then
+compressed CMB quantities at last-scattering redshift $z_*=1089.90$,
+then a BBKS matter power spectrum, then distances, then linear growth.
+Inference is not allowed to poke the raw integrator. Full $C_\ell$
+spectra remain Layer~2.
+
+The mandatory sanity check is the $\Lambda$CDM recovery test: when
+$k\to 0$,
+\begin{equation}
+  \max_z \bigl|H_S(z)/H_\Lambda(z)-1\bigr| < 10^{-4}.
+\end{equation}
+If that test fails, I stop.
+
+\subsection{Score the fit}
+
+Each probe is an independent Gaussian likelihood. If a dataset only
+stores error bars, $\chi^2$ is the usual sum of squared residuals. If
+it stores a covariance matrix (supernova systematics, BAO), the matrix
+form is used. The joint log-likelihood is the sum over probes. A
+parameter vector outside the allowed box is assigned
+$\ln\pi=-\infty$ and rejected.
+
+\subsection{Sample, then integrate}
+
+I explored the posterior with three optional algorithms:
+
+\begin{itemize}[leftmargin=1.6em]
+  \item \textbf{Random-walk Metropolis--Hastings} (default). Propose a
+        nearby point; accept it more often when it is more probable.
+  \item \textbf{Goodman--Weare stretch moves.} An ensemble of walkers
+        stretch toward one another. This is the method behind the
+        booth-app walker cartoon.
+  \item \textbf{Differential-evolution MCMC.} A walker steps along the
+        difference of two others, which helps when parameters are
+        correlated.
+\end{itemize}
+
+Walkers start at the fiducial values plus a small Gaussian jitter.
+Chain lengths, burn-in, walker count, and random seeds are
+command-line settings, not hidden constants.
+
+In parallel, nested sampling estimates the evidence $Z=\int L\,\pi\,d\theta$.
+A built-in live-point method is always available; dynesty, UltraNest,
+or PolyChord are used if they are installed. Evidence is an integral
+over all four parameters. It is not a number that should update live
+when someone moves a slider on the booth laptop.
+
+\subsection{Refuse to quote a broken chain}
+
+Before any 68\% or 95\% interval is reported, the chain has to pass a
+binary \texttt{converged} flag. The checks are standard:
+
+\begin{itemize}[leftmargin=1.6em]
+  \item Gelman--Rubin $\widehat R$ (and split-$\widehat R$), default
+        fail if $\widehat R>1.1$;
+  \item Sokal integrated autocorrelation time and effective sample size,
+        default fail if ESS~$<50$ on any parameter;
+  \item Geweke's comparison of the first 10\% of a chain with the last
+        50\%, used to pick burn-in;
+  \item acceptance rate in the window 0.15--0.50, plus stuck-walker
+        checks.
+\end{itemize}
+
+I do not quote intervals from a chain that fails this flag.
+
+\subsection{Compare models fairly}
+
+At the best-fit point I compute $\chi^2$, AIC, and BIC. Relative to
+$\Lambda$CDM, \Lcdms\ has $\Delta k=2$ extra parameters. For Gaussian
+likelihoods the penalties are identities:
+\begin{equation}
+  \Delta\mathrm{AIC}=\Delta\chi^2+4,\qquad
+  \Delta\mathrm{BIC}=\Delta\chi^2+2\ln n.
+\end{equation}
+WAIC, DIC, residual RMS, and a simple leave-one-out style check are
+computed automatically. Those scores are useful, but they are not a
+substitute for nested-sampling $Z$.
+
+Posterior samples also give means, medians, credible intervals, and
+the correlation matrix (including a published pairwise-$r$ table).
+$H_0$ is compared with Planck $67.4\pm 0.5$ and SH0ES $73.0\pm 1.0$.
+A posterior-predictive check then draws new mock catalogues from the
+fitted model and asks whether the real data look typical.
+
+\subsection{Make the run repeatable}
+
+Every production run writes seeds, dataset names, software versions,
+a git hash, a 16-character configuration hash, and YAML sidecars.
+Anyone with the same data folder and the same command line should be
+able to regenerate the chains.
+
+%------------------------------------------------------------------------------
+\section{Results}
+%------------------------------------------------------------------------------
+
+\subsection{\texorpdfstring{The integrator really is a $\Lambda$CDM extension}{The integrator really is a LambdaCDM extension}}
+
+The Layer-3 audit ran in 0.2~s. Critical checks: 8 passed, 0 failed,
+1 skipped (the full unit suite, which is off unless
+\texttt{--full} is requested). The important physics check is the
+recovery test. At the fiducial background the cosmic age is
+$t_0=14.161$~Gyr and today's switch value is $\chi_0=0.3529$. When the
+switch is forced off, the maximum fractional Hubble difference versus
+flat $\Lambda$CDM is $5.17\times 10^{-6}$, well inside the
+$10^{-4}$ budget. The facade distance modulus at $z=0.5$ in that
+limit is $\mu=42.165$.
+
+A dummy ``perfect fit'' vector returns $\chi^2=0$, which is the
+arithmetic identity a Gaussian likelihood must satisfy. The scope
+auditor loaded 11 allowed claims and 10 prohibited slogans, so the
+export step itself refuses phrases such as ``MCMC proved the
+attractor.''
+
+\begin{table}[H]
+\centering
+\caption{Live audit of the computing stack. ``Skipped'' means the
+optional full Layer-3 suite was not requested.}
+\label{tab:audit}
+\begin{tabular}{llp{0.52\textwidth}}
+\toprule
+Status & Check & What it confirmed \\
+\midrule
+Passed & Import        & \texttt{Bayesian\_Validationn} v2.0.0; 19 phase keys \\
+Passed & Layer stack   & Three layers; MCMC samples only the four parameters \\
+Passed & Claims        & Allowed / prohibited wording lists are loaded \\
+Passed & Parameters    & $\theta=(H_0,\Omega_\Lambda,k,\tcrit)$; Table~1 attached \\
+Passed & Recovery      & $\max|\Delta H/H|=5.17\times 10^{-6}$ \\
+Passed & Datasets      & 9 MCMC rows; 10 inventory rows \\
+Passed & Identities    & Dummy $\chi^2=0$; DES AIC/BIC algebra holds \\
+Passed & Facade        & $\mu(z=0.5)=42.165$ in the $\Lambda$CDM limit \\
+Skipped & Full suite   & Pass \texttt{--full} to run it \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{A slightly better curve is not a better model}
+
+On the published DES comparison with $n=1820$ supernovae, the extra
+switch improves the raw fit by
+\begin{equation}
+  \Delta\chi^2=-2.5
+  \quad\Rightarrow\quad
+  \Delta\ln L=1.25
+  \quad\Rightarrow\quad
+  L_S/L_\Lambda \approx 3.49.
+\end{equation}
+That sounds friendly to \Lcdms\ until the fines are applied. Two extra
+parameters give
+\[
+  \Delta\mathrm{AIC}=+1.5,\qquad \Delta\mathrm{BIC}=+12.5
+\]
+exactly. Those two numbers are algebra at the published best-fit
+point, not a second secret analysis.
+
+The published nested-sampling result is $\Delta\log Z=-6.5$, or a Bayes
+factor $B\approx 1.5\times 10^{-3}$ in favour of $\Lambda$CDM. On the
+usual Jeffreys wording that is strong to very strong support for the
+simpler model. Evidence is the quantity that answers ``which model
+should we bet on?''; $\chi^2$ only answers ``which curve hugs these
+points more tightly?''
+
+\subsection{What the posterior is allowed to say}
+
+When a production chain passes the convergence flag, the four
+parameters receive 68\% and 95\% equal-tail intervals, a covariance
+matrix, and an eigensystem that shows the main degeneracies. The
+honest scientific sentence is:
+
+\begin{quote}
+MCMC constrains $(H_0,\Omega_\Lambda,k,\tcrit)$. Nested sampling
+estimates $Z$. Neither calculation derives
+$G_{\mu\nu}+\Lambda g_{\mu\nu}=8\pi G T_{\mu\nu}$.
+\end{quote}
+
+$H_0$ can be compared with the Planck and SH0ES anchors, but this
+pipeline is not a claim that the switch ``solves the Hubble tension.''
+That would be one of the prohibited slogans.
+
+%------------------------------------------------------------------------------
+\section{Discussion}
+%------------------------------------------------------------------------------
+
+\subsection{Why the extra parameters lose}
+
+There is no paradox in ``better $\chi^2$, worse evidence.'' The switch
+has two free knobs. On this supernova comparison they buy about two
+and a half $\chi^2$ units. AIC already treats that as a wash
+($\Delta\mathrm{AIC}=+1.5$ is a weak preference for $\Lambda$CDM).
+BIC, which fines harder when $n$ is large, fines this model
+noticeably because $n=1820$ is large. Evidence fines even more,
+because the prior volume on $(k,\tcrit)$ is not free: most of that
+volume does not improve the fit.
+
+That is the scientific posture I want a judge to remember. A more
+flexible curve is easy to write down. A more flexible curve that
+survives a complexity penalty is rare. On the published numbers,
+\Lcdms\ does not survive it.
+
+\subsection{Why the computing still matters}
+
+A negative model-comparison result is still a successful computing
+project if the pipeline is honest. The recovery test shows the
+integrator is a real $\Lambda$CDM extension, not a broken Hubble
+function that happens to have four inputs. The facade forces every
+likelihood to see the same theory object. The auditor blocks
+overclaims in captions. The reproducibility snapshot means a later
+reader can rerun the same command.
+
+Those are the design criteria of the innovation: lock physics, predict
+observables, sample only what is allowed, and refuse to quote a
+chain that has not mixed.
+
+\subsection{Limitations}
+
+\begin{itemize}[leftmargin=1.6em]
+  \item The production facade uses compressed CMB distance priors, not
+        a full $C_\ell$ Boltzmann likelihood. Full spectra are Layer~2.
+  \item HMC/NUTS is reserved and unimplemented, because it needs
+        derivatives of $\ln\pi$ through the theory map.
+  \item Independent Gaussian probes are assumed. Shared systematics
+        between surveys are not modelled beyond the covariance each
+        probe already carries.
+  \item Published $\Delta\chi^2$, $\Delta$AIC, $\Delta$BIC, and
+        $\Delta\log Z$ are identities or nested-sampling integrals at
+        stated settings. They should not be remixed with a different
+        supernova catalogue without saying so.
+  \item Table~3 object counts describe a compilation. They are not
+        thousands of extra $\chi^2$ terms.
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\section{Conclusions}
+%------------------------------------------------------------------------------
+
+I built a three-layer computing stack that tests \Lcdms\ as a
+phenomenological extension of flat $\Lambda$CDM. The sampled vector is
+only $(H_0,\Omega_\Lambda,k,\tcrit)$. The background integrator
+recovers $\Lambda$CDM to $5\times 10^{-6}$ when the extra switch is
+turned off. On the published DES comparison the extra switch improves
+$\chi^2$ by 2.5, but $\Delta\mathrm{AIC}=+1.5$,
+$\Delta\mathrm{BIC}=+12.5$, and $\Delta\log Z=-6.5$ all favour the
+simpler model.
+
+The conclusion is therefore two-sided, and both sides are intended:
+
+\begin{enumerate}[leftmargin=1.6em]
+  \item \textbf{Physics claim (narrow).} This computing layer does not
+        derive de~Sitter from the likelihood. That argument lives in
+        the theory file and stands or falls on its own assumptions.
+  \item \textbf{Data claim (narrow).} After complexity penalties, these
+        probes do not prefer the extra $(k,\tcrit)$ pair.
+\end{enumerate}
+
+That is a successful validation of the method, and a negative---but
+honest---result for the extra parameters.
+
+%------------------------------------------------------------------------------
+\section{What I would do next}
+%------------------------------------------------------------------------------
+
+The next useful step is not another slogan. It is a tighter likelihood:
+swap the compressed CMB vector for Layer~2 $C_\ell$ spectra, keep the
+same four-parameter vector, and rerun nested sampling. If $\Delta\log Z$
+stays negative, the extra switch is not helping. If it flips, the
+result had better still pass $\widehat R$, ESS, and the recovery test
+before anyone quotes it.
+
+%------------------------------------------------------------------------------
+\section{Acknowledgements}
+%------------------------------------------------------------------------------
+
+Public catalogues from Pantheon+, DES, SH0ES, DESI, BOSS, and Planck
+made the likelihood possible. Optional backends were used only when
+installed; the standard-library sampler remains the default. Mentors
+who read earlier drafts pushed the wording toward what the computer
+actually constrained, rather than what would sound impressive.
+
+%------------------------------------------------------------------------------
+\section{References}
+%------------------------------------------------------------------------------
+
+{\small
+\begin{enumerate}[leftmargin=1.8em,itemsep=0.2em]
+  \item Planck Collaboration. (2020). Planck 2018 results. VI.
+        Cosmological parameters. \textit{Astronomy \& Astrophysics},
+        641, A6.
+  \item Brout, D., et al. (2022). The Pantheon+ analysis: Cosmological
+        constraints. \textit{The Astrophysical Journal}, 938, 110.
+  \item DES Collaboration. (2024). The Dark Energy Survey: Cosmology
+        results with $\sim 1500$ new high-redshift Type~Ia supernovae
+        using the full 5-year dataset. \textit{The Astrophysical Journal
+        Letters}, 973, L14.
+  \item Riess, A.~G., et al. (2022). A comprehensive measurement of the
+        local value of the Hubble constant with 1~km~s$^{-1}$~Mpc$^{-1}$
+        uncertainty from the Hubble Space Telescope and the SH0ES team.
+        \textit{The Astrophysical Journal Letters}, 934, L7.
+  \item DESI Collaboration. (2025). DESI DR2 results. II. Measurements
+        of baryon acoustic oscillations and cosmological constraints.
+        \textit{arXiv}:2503.14738.
+  \item Alam, S., et al. (2017). The clustering of galaxies in the
+        completed SDSS-III Baryon Oscillation Spectroscopic Survey.
+        \textit{Monthly Notices of the Royal Astronomical Society},
+        470, 2617--2652.
+  \item Goodman, J., \& Weare, J. (2010). Ensemble samplers with
+        affine invariance. \textit{Communications in Applied
+        Mathematics and Computational Science}, 5, 65--80.
+  \item ter Braak, C.~J.~F. (2006). A Markov chain Monte Carlo version
+        of the genetic algorithm Differential Evolution.
+        \textit{Statistics and Computing}, 16, 239--249.
+  \item Skilling, J. (2006). Nested sampling for general Bayesian
+        computation. \textit{Bayesian Analysis}, 1, 833--859.
+  \item Gelman, A., \& Rubin, D.~B. (1992). Inference from iterative
+        simulation using multiple sequences. \textit{Statistical
+        Science}, 7, 457--472.
+  \item Akaike, H. (1974). A new look at the statistical model
+        identification. \textit{IEEE Transactions on Automatic
+        Control}, 19, 716--723.
+  \item Schwarz, G. (1978). Estimating the dimension of a model.
+        \textit{The Annals of Statistics}, 6, 461--464.
+  \item Jeffreys, H. (1961). \textit{Theory of Probability}
+        (3rd~ed.). Oxford University Press.
+  \item Lewis, A., \& Bridle, S. (2002). Cosmological parameters from
+        CMB and other data: A Monte Carlo approach.
+        \textit{Physical Review D}, 66, 103511.
+\end{enumerate}
+}
+
+%------------------------------------------------------------------------------
+\appendix
+\section{Two-minute judge sheet and how to rerun}
+%------------------------------------------------------------------------------
+
+Sentences I will stand behind: I sample four numbers, not the attractor.
+Turning the switch off recovers $\Lambda$CDM to $5.17\times 10^{-6}$.
+On DES, $\chi^2$ improves by 2.5, but AIC, BIC, and evidence still favour
+$\Lambda$CDM. $\Delta\log Z=-6.5$ is an integral, not a slider. The
+Streamlit app is a cartoon; the sampler is
+\texttt{Bayesian\_Validationn.py}. Do not write ``MCMC proved the
+attractor.''
+
+All MCMC sizes are command-line flags, for example:
+\texttt{python Bayesian\_Validationn.py --prod-steps 2000 --burn 400
+--chains 4 --data-dir PATH --require-sn}, and
+\texttt{python computing\_validation.py} for the audit that exported
+this report.
+
+\end{document}

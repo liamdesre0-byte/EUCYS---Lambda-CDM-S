@@ -1,0 +1,74 @@
+# ΛCDM+S default configuration
+# Values are those already present in Bayesian_Validationn.py /
+# analytical_solver.py. Comments record meaning and units.
+# This file does not invent extra cosmological parameters.
+
+# ---------------------------------------------------------------------------
+# Four-parameter inference θ  (bayesian_validation.BackgroundParams)
+# Ω_Λ here is the present entropy-sector fraction Ω_S,0 — not vacuum energy.
+# ---------------------------------------------------------------------------
+fiducial:
+  H0: 72.8                 # km s^{-1} Mpc^{-1}; Table 1 / FIDUCIAL_H0
+  Omega_Lambda: 0.685      # dimensionless; ≡ Ω_S,0; FIDUCIAL_OMEGA_LAMBDA
+  k: 0.37                  # Gyr^{-1}; Γ-class rate, k ≡ γ; FIDUCIAL_K_GYR
+  t_crit: 15.8             # Gyr; χ(t_crit)=1/2 midpoint; FIDUCIAL_T_CRIT_GYR
+  omega_r0: 9.0e-5         # radiation fraction today (fixed, not sampled)
+  S_max: 1.0               # entropy units used in w_S bookkeeping (ANALYTICAL_S_MAX)
+  S_early: 1.0e-3          # early-time S_H floor (ANALYTICAL_S_EARLY)
+
+# Table 1 factorized Gaussian priors π(θ) = Π_i N(μ_i, σ_i²)
+priors:
+  H0: {mu: 72.8, sigma: 2.059}            # km s^{-1} Mpc^{-1}
+  Omega_Lambda: {mu: 0.685, sigma: 0.012} # dimensionless
+  k: {mu: 0.37, sigma: 0.068}             # Gyr^{-1}
+  t_crit: {mu: 15.8, sigma: 1.408}        # Gyr
+
+# Coupled ODE parameterization used by analytical_solver.LCDMSParams
+# (χ0 is a present-day boundary value; the Bayesian code does NOT remap
+# t_crit to force χ0 ≈ 0.92 — see SCIENTIFIC_AUDIT.md).
+analytical_solver:
+  H0: 70.0                 # km s^{-1} Mpc^{-1}
+  Omega_m0: 0.30           # matter fraction today
+  Omega_r0: 9.0e-5
+  gamma: 0.35              # Gyr^{-1}; logistic rate
+  S_max: 1.0
+  S_early: 1.0e-3
+  chi0: 0.92               # χ(a=1) in the ODE solver
+  Obh2: 0.02237
+  z_max: 1100.0
+  n_eval: 2000
+  rtol: 1.0e-8
+  atol: 1.0e-10
+  temperature_mode: dynamical_horizon   # or de_sitter
+
+# Production Bayesian validation (original CLI defaults)
+mcmc:
+  seed: 8
+  steps: 300               # production steps per chain / walker
+  chains: 2
+  burn: null               # null → steps//6
+  walkers: 10
+  method: metropolis       # metropolis | affine | differential_evolution
+  step_frac: 0.4           # Metropolis width as a fraction of prior σ
+  nlive: 25
+  ns_iter: 100
+  theory_nsteps: 400       # background RK steps inside ModifiedCLASS
+  ess_min: 50.0
+  rhat_max: 1.1
+  thin: 1
+  # Original production path freezes the entropy sector (lcdm_limit: true).
+  # Set false, or pass --entropy-sector, to sample logistic ΛCDM+S dynamics.
+  lcdm_limit: true
+  skip_cmb: false
+  skip_prior_predictive: false
+  ppc_runs: 200
+  no_artifacts: false
+  skip_validation: false
+  no_getdist: false
+
+paths:
+  outdir: results
+  data_dir: null           # optional folder with pantheon_plus.csv / des_sny5.csv
+  export_dir: theory_export
+  validation_out: lcdms_validation_out
+  figures: figures

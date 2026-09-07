@@ -1,0 +1,1771 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,longtable,array}
+\usepackage{enumitem,xcolor,hyperref,microtype,fancyhdr}
+\hypersetup{colorlinks=true,linkcolor=black,urlcolor=blue!50!black}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\textsc{$\Lambda$CDM+S complete derivation}}
+\fancyhead[R]{\thepage}
+\theoremstyle{remark}\newtheorem*{caution}{Caution}
+\newcommand{\tagbox}[1]{\textsc{[#1]}}
+\title{Complete First-Principles Derivation for $\Lambda$CDM+S\\[0.3em]\large All tagged equations from Modules J, K, and G}
+\author{Auto-exported from \texttt{analytical\_proof.py} / \texttt{equation\_registry.json}}
+\date{\today}
+\begin{document}
+\maketitle
+\begin{abstract}
+analytical\_proof.py — Version 1 proof architecture Architecture: MODULE J: local thermo => EFE | MODULE K: Onsager closure, S\_max bound, FLRW via Copernican, hard Lambda=Lambda\_S, Q, perturbations | MODULE G: attractor => asymptotic Einstein => I\_E=-S\_max This manuscript enumerates all 120 registered equations with epistemic tags, dependencies, premises, operations, notes, counterexamples, and symbolic checks.
+\end{abstract}
+\tableofcontents\newpage
+\section{Scientific posture and calibrated claims}
+\begin{caution}
+Do NOT write '2nd law = de Sitter = acceleration'. Rigorous: GSL AND finite S\_max AND thermodynamic closure => stable de Sitter attractor => accelerated expansion.
+\par\vspace{0.5em}
+NOT DERIVED from Module G (global Hubble-horizon) alone: G\_mu\_nu + Lambda g\_mu\_nu = 8 pi G T\_mu\_nu. Module G yields asymptotic G\_mu\_nu^(infty) + Lambda\_S g\_mu\_nu = 0 with Lambda\_S = 3 pi/(G S\_max). Full local EFE is obtained in Module J (Jacobson) as a CONDITIONAL\_THEOREM under Clausius, local Rindler equilibrium, and null Raychaudhuri premises.
+\par\vspace{0.5em}
+Do NOT say 'the universe chooses de Sitter because QG maximizes Z'. Conditional: under Euclidean dS continuation and EH convention, I\_E^{dS}=-S\_dS; attractor sets S\_dS=S\_max => I\_E=-S\_max.
+\end{caution}
+\subsection{Claims A--F}
+\begin{enumerate}[label=\textbf{Claim~\Alph*:}]
+\item S\_H=π/(G H²) derived from horizon geometry + BH application
+\item finite S\_max + χ→1 ⇒ H→sqrt(π/(G S\_max))>0
+\item logistic (γ>0): λ=-γ<0 ⇒ stable χ→1
+\item asymptotic a∼e^{H\_∞ t}
+\item G\_μν^(∞)+Λ\_S g\_μν=0 with Λ\_S=3π/(G S\_max)
+\item full local EFE: CONDITIONAL\_THEOREM in Module J (Jacobson); NOT derived from Module G alone
+\end{enumerate}
+\subsection{Module K gaps closed}
+\begin{itemize}
+\item \textbf{1\_Gamma:} K1 Onsager + minimal mobility => logistic / Gamma-class
+\item \textbf{2\_Smax:} K2 holographic bound + finite-area horizon => finite S\_max
+\item \textbf{3\_FLRW:} K3 EFE + Copernican => FLRW (flatness still assumed)
+\item \textbf{4\_BH\_apparent:} K4 Hayward/Cai apparent-horizon thermodynamics
+\item \textbf{5\_Lambda\_match:} K5 hard match Lambda = Lambda\_S
+\item \textbf{6\_action:} K6 Phi(chi) max at S\_max; endpoint on-shell EH
+\item \textbf{7\_perturbations:} K8 linear continuity + isocurvature definition
+\item \textbf{8\_Q:} K7 interacting-fluid Q with total conservation
+\item \textbf{9\_chi\_vs\_w:} K9 chi not identically w; optional pheno mixing map
+\item \textbf{10\_Jacobson\_rigor:} K10 Clausius domain + O(theta^2,sigma^2) errors
+\end{itemize}
+\section{Complete equation registry}
+Tags: AXIOM, STANDARD\_RESULT, ASSUMED, JUSTIFIED\_ASSUMPTION, DERIVED, LEMMA, THEOREM, CONDITIONAL\_THEOREM, CONSISTENCY\_CHECK, PHENOMENOLOGY, CONJECTURE, UNPROVEN.
+\subsection{Module J --- boundary}
+\textit{Module key: \texttt{J0\_boundary}.}
+\paragraph{(J0.1) \tagbox{AXIOM} \texttt{module\_boundary}.}
+\begin{equation}
+\text{Module J $\perp$ Module G (no shared soft premises)}
+\tag{J0.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Do not feed J-results backward into G-theorems as if G alone derived the EFE. Architecture: J => EFE => FLRW => Module G.
+\item \textbf{ASCII:} \texttt{Jacobson module SEPARATE from global attractor proof}
+\end{itemize}
+\subsection{Module J --- local thermodynamic premises}
+\textit{Module key: \texttt{J1\_premises}.}
+\paragraph{(J1.1) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{local\_Rindler\_horizons}.}
+\begin{equation}
+\text{At each }p\text{: local Rindler horizon through }p\text{ with approximate Killing vector }\chi^\mu
+\tag{J1.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J0.1}
+\item \textbf{Assumptions:} local causal/Rindler horizons; approximate boost Killing field
+\item \textbf{Soft ancestors:} \texttt{J1.1}
+\item \textbf{Note:} Jacobson: enough local acceleration horizons exist that the null-projection condition for all null k^μ can be imposed.
+\item \textbf{ASCII:} \texttt{local Rindler horizons at each spacetime point}
+\end{itemize}
+\paragraph{(J1.2) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{Clausius}.}
+\begin{equation}
+\delta Q = T\,dS
+\tag{J1.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.1}
+\item \textbf{Assumptions:} local thermodynamic equilibrium on the horizon pencil
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}
+\item \textbf{Note:} Clausius relation for heat across the local horizon (equilibrium).
+\item \textbf{ASCII:} \texttt{delta Q = T dS}
+\end{itemize}
+\paragraph{(J1.3) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{entropy\_area}.}
+\begin{equation}
+dS=\frac{\eta}{4}\,dA\quad(\eta=1/G\;\Rightarrow\;dS=dA/(4G))
+\tag{J1.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.1}
+\item \textbf{Assumptions:} entropy-area density constant eta=1/G
+\item \textbf{Symbolic:} \texttt{Eq(dS, dA/(4*G))}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.3}
+\item \textbf{Note:} Horizon entropy proportional to area. Standard BH value eta=1/G. If eta were field-dependent, modified gravity can appear.
+\item \textbf{ASCII:} \texttt{dS = dA/(4G)}
+\end{itemize}
+\paragraph{(J1.4) \tagbox{STANDARD\_RESULT} \texttt{Unruh\_temperature}.}
+\begin{equation}
+T=\frac{\hbar\kappa}{2\pi k_B}\;\xrightarrow{\mathrm{nat.\,units}}\;T=\frac{\kappa}{2\pi}
+\tag{J1.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}
+\item \textbf{Note:} Unruh temperature for acceleration kappa of the local Rindler horizon.
+\item \textbf{ASCII:} \texttt{T = kappa/(2 pi)}
+\end{itemize}
+\subsection{Module J --- Raychaudhuri geometry}
+\textit{Module key: \texttt{J2\_geometry}.}
+\paragraph{(J2.1) \tagbox{STANDARD\_RESULT} \texttt{Raychaudhuri\_null}.}
+\begin{equation}
+\frac{d\theta}{d\lambda}=-\frac12\theta^2-\sigma_{\mu\nu}\sigma^{\mu\nu}+\omega_{\mu\nu}\omega^{\mu\nu}-R_{\mu\nu}k^\mu k^\nu
+\tag{J2.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J0.1}
+\item \textbf{Note:} k^μ = null generator; λ affine parameter; θ expansion; σ shear; ω vorticity.
+\item \textbf{ASCII:} \texttt{null Raychaudhuri equation}
+\end{itemize}
+\paragraph{(J2.2) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{local\_equilibrium}.}
+\begin{equation}
+\omega_{\mu\nu}=0,\quad \theta\approx 0,\quad \sigma_{\mu\nu}\approx 0
+\tag{J2.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.1}, \texttt{J2.1}
+\item \textbf{Assumptions:} local equilibrium pencil; hypersurface-orthogonal generators
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J2.2}
+\item \textbf{Note:} At the instant the horizon is chosen through p: vanishing expansion and shear (and vorticity for hypersurface-orthogonal generators).
+\item \textbf{ASCII:} \texttt{hypersurface-orthogonal + instantaneous equilibrium}
+\end{itemize}
+\paragraph{(J2.3) \tagbox{DERIVED} \texttt{Raychaudhuri\_linearized}.}
+\begin{equation}
+\frac{d\theta}{d\lambda}\approx -R_{\mu\nu}k^\mu k^\nu
+\tag{J2.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{drop\_quadratic\_terms\_at\_equilibrium}
+\item \textbf{Depends on:} \texttt{J2.1}, \texttt{J2.2}
+\item \textbf{Premises:} \texttt{J2.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J2.2}
+\item \textbf{ASCII:} \texttt{d theta / d lambda ≈ - R\_mu\_nu k^mu k^nu}
+\end{itemize}
+\paragraph{(J2.4) \tagbox{STANDARD\_RESULT} \texttt{area\_variation}.}
+\begin{equation}
+\delta A=\int_H \theta\,d\lambda\,dA
+\tag{J2.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J2.1}
+\item \textbf{Note:} First-order area change of a pencil of generators.
+\item \textbf{ASCII:} \texttt{delta A = integral theta d lambda dA}
+\end{itemize}
+\subsection{Module J --- Clausius and null projection}
+\textit{Module key: \texttt{J3\_Clausius}.}
+\paragraph{(J3.1) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{heat\_flux}.}
+\begin{equation}
+\delta Q=\int_H T_{\mu\nu}\chi^\mu d\Sigma^\nu
+\tag{J3.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.1}
+\item \textbf{Assumptions:} stress-energy supplies the heat flux
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J3.1}
+\item \textbf{Note:} Matter energy flux across the horizon. chi^μ ≈ -κ λ k^μ on the approximate Killing horizon.
+\item \textbf{ASCII:} \texttt{delta Q = integral T\_mu\_nu chi^mu dSigma^nu}
+\end{itemize}
+\paragraph{(J3.2) \tagbox{DERIVED} \texttt{Clausius\_expanded}.}
+\begin{equation}
+\delta Q=T\,dS=\frac{\kappa}{2\pi}\cdot\frac{1}{4G}\,\delta A=\frac{\kappa}{8\pi G}\int_H\theta\,d\lambda\,dA
+\tag{J3.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{substitute\_T\_and\_dS}
+\item \textbf{Depends on:} \texttt{J1.2}, \texttt{J1.3}, \texttt{J1.4}, \texttt{J2.4}
+\item \textbf{Premises:} \texttt{J1.2}, \texttt{J1.3}, \texttt{J1.4}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}
+\item \textbf{ASCII:} \texttt{delta Q = (kappa/(8 pi G)) integral theta d lambda dA}
+\end{itemize}
+\paragraph{(J3.3) \tagbox{DERIVED} \texttt{integrate\_by\_parts\_theta}.}
+\begin{equation}
+\int\theta\,d\lambda\,dA=-\int\lambda\,\frac{d\theta}{d\lambda}\,d\lambda\,dA\approx\int\lambda R_{\mu\nu}k^\mu k^\nu\,d\lambda\,dA
+\tag{J3.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{integrate\_by\_parts\_plus\_Raychaudhuri}
+\item \textbf{Depends on:} \texttt{J2.3}, \texttt{J2.4}
+\item \textbf{Premises:} \texttt{J2.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J2.2}
+\item \textbf{Note:} Boundary term vanishes for the local pencil at equilibrium.
+\item \textbf{ASCII:} \texttt{integral theta -> integral lambda R\_mu\_nu k^mu k^nu}
+\end{itemize}
+\paragraph{(J3.4) \tagbox{DERIVED} \texttt{equate\_fluxes}.}
+\begin{equation}
+\int_H T_{\mu\nu}k^\mu k^\nu\,\kappa\lambda\,d\lambda\,dA=\frac{\kappa}{8\pi G}\int_H R_{\mu\nu}k^\mu k^\nu\,\lambda\,d\lambda\,dA
+\tag{J3.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{equate\_deltaQ\_forms\_cancel\_kappa}
+\item \textbf{Depends on:} \texttt{J3.1}, \texttt{J3.2}, \texttt{J3.3}
+\item \textbf{Premises:} \texttt{J1.2}, \texttt{J1.3}, \texttt{J1.4}, \texttt{J2.2}, \texttt{J3.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}
+\item \textbf{ASCII:} \texttt{T\_mu\_nu k^mu k^nu = R\_mu\_nu k^mu k^nu / (8 pi G)  (integrated)}
+\end{itemize}
+\paragraph{(J3.5) \tagbox{CONDITIONAL\_THEOREM} \texttt{null\_projection}.}
+\begin{equation}
+T_{\mu\nu}k^\mu k^\nu=\frac{1}{8\pi G}R_{\mu\nu}k^\mu k^\nu\quad\text{for all null }k^\mu
+\tag{J3.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{localize\_integrand\_arbitrary\_null\_k}
+\item \textbf{Depends on:} \texttt{J3.4}, \texttt{J1.1}
+\item \textbf{Premises:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J1.4}, \texttt{J2.2}, \texttt{J3.1}
+\item \textbf{Verified:} yes --- Null-projection coefficient 1/(8 pi G) matches Einstein coupling.
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}
+\item \textbf{Note:} Because local Rindler horizons exist in every null direction at each p, the integrand identity holds for all null k^μ.
+\item \textbf{ASCII:} \texttt{T\_mu\_nu k^mu k^nu = R\_mu\_nu k^mu k^nu / (8 pi G) for all null k}
+\end{itemize}
+\subsection{Module J --- reconstruction and $\Lambda$}
+\textit{Module key: \texttt{J4\_reconstruction}.}
+\paragraph{(J4.1) \tagbox{LEMMA} \texttt{null\_tensor\_lemma}.}
+\begin{equation}
+(S_{\mu\nu}k^\mu k^\nu=0\;\forall\text{ null }k)\;\Rightarrow\;S_{\mu\nu}=f g_{\mu\nu}
+\tag{J4.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{algebraic\_identity\_Lorentzian\_metric}
+\item \textbf{Depends on:} \texttt{J0.1}
+\item \textbf{Note:} Standard GR lemma: a symmetric tensor orthogonal to all null vectors is proportional to the metric.
+\item \textbf{ASCII:} \texttt{null-vanishing symmetric tensor => multiple of metric}
+\end{itemize}
+\paragraph{(J4.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{Einstein\_up\_to\_scalar}.}
+\begin{equation}
+R_{\mu\nu}-8\pi G\,T_{\mu\nu}=f g_{\mu\nu}
+\tag{J4.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{apply\_null\_tensor\_lemma\_to\_S=R-8piG T}
+\item \textbf{Depends on:} \texttt{J3.5}, \texttt{J4.1}
+\item \textbf{Premises:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J1.4}, \texttt{J2.2}, \texttt{J3.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}
+\item \textbf{ASCII:} \texttt{R\_mu\_nu - 8 pi G T\_mu\_nu = f g\_mu\_nu}
+\end{itemize}
+\paragraph{(J4.3) \tagbox{STANDARD\_RESULT} \texttt{contracted\_Bianchi}.}
+\begin{equation}
+\nabla^\mu G_{\mu\nu}=0
+\tag{J4.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J0.1}
+\item \textbf{Note:} Contracted Bianchi identity (differential geometry).
+\item \textbf{ASCII:} \texttt{div G = 0}
+\end{itemize}
+\paragraph{(J4.4) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{stress\_energy\_conservation}.}
+\begin{equation}
+\nabla^\mu T_{\mu\nu}=0
+\tag{J4.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J0.1}
+\item \textbf{Assumptions:} total stress-energy conservation
+\item \textbf{Soft ancestors:} \texttt{J4.4}
+\item \textbf{Note:} Local matter conservation. Needed to fix the integration function as a cosmological constant. Interacting sectors must conserve totally.
+\item \textbf{ASCII:} \texttt{div T = 0}
+\end{itemize}
+\paragraph{(J4.5) \tagbox{CONDITIONAL\_THEOREM} \texttt{Lambda\_integration\_constant}.}
+\begin{equation}
+\nabla_\nu\bigl(f-\tfrac12 R\bigr)=0\;\Rightarrow\;f-\tfrac12 R=-\Lambda=\mathrm{const}
+\tag{J4.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{take\_divergence\_plus\_Bianchi}
+\item \textbf{Depends on:} \texttt{J4.2}, \texttt{J4.3}, \texttt{J4.4}
+\item \textbf{Premises:} \texttt{J4.4}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Λ appears as an integration constant of the local thermodynamic derivation — not inserted by hand into the action at this step.
+\item \textbf{ASCII:} \texttt{f - R/2 = -Lambda (constant)}
+\end{itemize}
+\subsection{Module J --- Einstein field equations}
+\textit{Module key: \texttt{J5\_EFE}.}
+\paragraph{(J5.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{Einstein\_field\_equations}.}
+\begin{equation}
+\boxed{G_{\mu\nu}+\Lambda g_{\mu\nu}=8\pi G\,T_{\mu\nu}}
+\tag{J5.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{rearrange\_to\_Einstein\_form}
+\item \textbf{Depends on:} \texttt{J4.2}, \texttt{J4.5}
+\item \textbf{Premises:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J1.4}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Verified:} yes --- EFE recovered: R\_mu\_nu-(1/2)R g + Lambda g = 8 pi G T from f=R/2-Lambda.
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} CLAIM F (Module J): full local Einstein equation, CONDITIONAL on local Rindler Clausius thermodynamics + Raychaudhuri equilibrium + stress-energy conservation. NOT a Module-G result.
+\item \textbf{ASCII:} \texttt{G\_mu\_nu + Lambda g\_mu\_nu = 8 pi G T\_mu\_nu}
+\end{itemize}
+\paragraph{(J5.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{Lambda\_vs\_Lambda\_S\_pointer}.}
+\begin{equation}
+\Lambda\leftrightarrow\Lambda_S:\ \text{see Module K hard-match theorem K5.1}
+\tag{J5.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{deferred\_to\_Module\_K}
+\item \textbf{Depends on:} \texttt{J5.1}
+\item \textbf{Premises:} \texttt{J5.1}, \texttt{Module K}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Hard match is completed in Module K (K5.1), not left as informal matching.
+\item \textbf{ASCII:} \texttt{Lambda <-> Lambda\_S: see Module K theorem K5.1}
+\end{itemize}
+\paragraph{(J5.3) \tagbox{AXIOM} \texttt{architecture\_J\_then\_G}.}
+\begin{equation}
+\text{local thermo}\to\text{EFE}\to\text{FLRW}\to S_H=\pi/(GH^2)\to\text{attractor}\to\Lambda_S
+\tag{J5.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J5.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Research architecture. Module G remains valid as a standalone asymptotic analysis even if one only imports EFE as STANDARD\_RESULT.
+\item \textbf{ASCII:} \texttt{ultimate architecture: J then G}
+\end{itemize}
+\subsection{Module K --- Onsager origin of $\Gamma(\chi)$}
+\textit{Module key: \texttt{K1\_closure\_variational}.}
+\paragraph{(K1.1) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{Onsager\_mobility}.}
+\begin{equation}
+\dot\chi=M(\chi)\,\partial_\chi S_H,\quad M(\chi)\ge 0,\; M(0)=M(1)=0
+\tag{K1.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} Onsager gradient flow on chi in [0,1]
+\item \textbf{Soft ancestors:} \texttt{K1.1}
+\item \textbf{Note:} Bounded entropy-completion coordinate: mobility vanishes at endpoints so chi=0,1 are fixed points. Standard irreversible-thermo structure.
+\item \textbf{ASCII:} \texttt{chi\_dot = M(chi) * dS\_H/dchi  (Onsager / gradient flow)}
+\end{itemize}
+\paragraph{(K1.2) \tagbox{DERIVED} \texttt{dS\_dchi}.}
+\begin{equation}
+\partial_\chi S_H=S_{\max}-S_{\mathrm{early}}=\Delta S
+\tag{K1.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{differentiate\_S\_of\_chi}
+\item \textbf{Depends on:} \texttt{G4.2}
+\item \textbf{Symbolic:} \texttt{-S\_early + S\_max}
+\item \textbf{Soft ancestors:} \texttt{G4.1}
+\item \textbf{ASCII:} \texttt{dS\_H/dchi = Delta S}
+\end{itemize}
+\paragraph{(K1.3) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{minimal\_mobility}.}
+\begin{equation}
+M_{\mathrm{min}}(\chi)=(\gamma/\Delta S)\,\chi(1-\chi)
+\tag{K1.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K1.1}
+\item \textbf{Assumptions:} minimal polynomial mobility on [0,1]
+\item \textbf{Symbolic:} \texttt{chi*gamma*(1 - chi)/(-S\_early + S\_max)}
+\item \textbf{Soft ancestors:} \texttt{K1.1}, \texttt{K1.3}
+\item \textbf{Note:} Minimal nonnegative polynomial mobility with simple zeros at 0,1. Uniqueness within polynomials of degree <=2 with those zeros.
+\item \textbf{ASCII:} \texttt{M\_min = (gamma/DeltaS) chi(1-chi)}
+\end{itemize}
+\paragraph{(K1.4) \tagbox{CONDITIONAL\_THEOREM} \texttt{Gamma\_from\_Onsager}.}
+\begin{equation}
+\dot\chi=\gamma\chi(1-\chi)
+\tag{K1.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{M\_times\_dS\_dchi}
+\item \textbf{Depends on:} \texttt{K1.1}, \texttt{K1.2}, \texttt{K1.3}, \texttt{G5.2}
+\item \textbf{Premises:} \texttt{K1.1}, \texttt{K1.3}
+\item \textbf{Symbolic:} \texttt{chi*gamma*(1 - chi)}
+\item \textbf{Verified:} yes --- Onsager+minimal M recovers logistic Gamma
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}, \texttt{K1.1}, \texttt{K1.3}
+\item \textbf{Note:} Closes Gap 1: logistic is derived from Onsager gradient flow of S\_H with minimal endpoint-vanishing mobility — not from GSL alone.
+\item \textbf{ASCII:} \texttt{logistic recovered from Onsager + minimal mobility}
+\end{itemize}
+\paragraph{(K1.5) \tagbox{CONDITIONAL\_THEOREM} \texttt{Gamma\_class\_from\_mobility}.}
+\begin{equation}
+M(0)=M(1)=0,\;M>0\text{ on }(0,1)\;\Rightarrow\;\Gamma=\Delta S\,M\text{ is a }\Gamma\text{-class closure}
+\tag{K1.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{sign\_and\_fixed\_point\_analysis}
+\item \textbf{Depends on:} \texttt{K1.1}, \texttt{K1.2}
+\item \textbf{Premises:} \texttt{K1.1}
+\item \textbf{Soft ancestors:} \texttt{G4.1}, \texttt{K1.1}
+\item \textbf{Note:} Class robustness: attractor H\_infty depends only on chi->1, not on M details.
+\item \textbf{ASCII:} \texttt{any endpoint-vanishing mobility => Gamma-class}
+\end{itemize}
+\subsection{Module K --- finite $S_{\max}$}
+\textit{Module key: \texttt{K2\_Smax}.}
+\paragraph{(K2.1) \tagbox{STANDARD\_RESULT} \texttt{covariant\_entropy\_bound}.}
+\begin{equation}
+S(\mathcal{L})\le A/(4G)\quad\text{(Bousso / holographic bound)}
+\tag{K2.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Covariant entropy bound: entropy on a lightsheet <= boundary area/4G.
+\item \textbf{ASCII:} \texttt{S <= A/(4G) on lightsheet L}
+\end{itemize}
+\paragraph{(K2.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{apparent\_horizon\_bound}.}
+\begin{equation}
+S_H\le A_H/(4G)=\pi/(G H^2)
+\tag{K2.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{apply\_bound\_to\_apparent\_horizon}
+\item \textbf{Depends on:} \texttt{K2.1}, \texttt{G1.3}, \texttt{G0.4}
+\item \textbf{Premises:} \texttt{K2.1}, \texttt{G0.3}
+\item \textbf{Symbolic:} \texttt{pi/(G*H**2)}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{Note:} With equality in the BH/equilibrium case used in Module G.
+\item \textbf{ASCII:} \texttt{S\_H <= pi/(G H^2)}
+\end{itemize}
+\paragraph{(K2.3) \tagbox{CONDITIONAL\_THEOREM} \texttt{Smax\_finite}.}
+\begin{equation}
+(0<H_{\mathrm{eq}}<\infty)\;\Rightarrow\;0<S_{\max}=A_{\mathrm{eq}}/(4G)<\infty
+\tag{K2.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{evaluate\_bound\_at\_equilibrium\_horizon}
+\item \textbf{Depends on:} \texttt{K2.2}, \texttt{G0.5}
+\item \textbf{Premises:} \texttt{existence of finite-area causal/apparent equilibrium horizon}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}
+\item \textbf{Note:} Closes Gap 2: S\_max is finite whenever the equilibrium horizon area is finite and positive. Still conditional on such an equilibrium existing (supplied dynamically by Module G closure, or by Module J vacuum+Lambda).
+\item \textbf{ASCII:} \texttt{finite-area equilibrium horizon => finite S\_max}
+\end{itemize}
+\subsection{Module K --- FLRW from EFE + Copernican}
+\textit{Module key: \texttt{K3\_FLRW}.}
+\paragraph{(K3.1) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{Copernican}.}
+\begin{equation}
+\text{spatial homogeneity + isotropy (Copernican principle)}
+\tag{K3.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} Copernican principle
+\item \textbf{Soft ancestors:} \texttt{K3.1}
+\item \textbf{Note:} Cannot be derived from local horizon thermo alone. Standard cosmological symmetry assumption.
+\item \textbf{ASCII:} \texttt{Copernican: homogeneous + isotropic spatial slices}
+\end{itemize}
+\paragraph{(K3.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{FLRW\_from\_EFE\_plus\_Copernican}.}
+\begin{equation}
+(\mathrm{EFE})+\text{homogeneity+isotropy}\;\Rightarrow\;ds^2=-dt^2+a(t)^2 d\mathbf{x}^2_{(k)}
+\tag{K3.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{symmetry\_reduction\_of\_EFE}
+\item \textbf{Depends on:} \texttt{J5.1}, \texttt{K3.1}
+\item \textbf{Premises:} \texttt{J5.1}, \texttt{K3.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}, \texttt{K3.1}
+\item \textbf{Note:} Closes Gap 3 at the standard level: FLRW is derived from Module-J EFE plus Copernican symmetry — not from horizon entropy alone.
+\item \textbf{ASCII:} \texttt{EFE + Copernican => FLRW}
+\end{itemize}
+\paragraph{(K3.3) \tagbox{ASSUMED} \texttt{flatness\_choice}.}
+\begin{equation}
+k=0\quad\text{(observationally favored / simplest branch)}
+\tag{K3.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K3.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}, \texttt{K3.1}, \texttt{K3.3}
+\item \textbf{Note:} Spatial flatness remains a branch choice (or inflationary late-time attractor).
+\item \textbf{ASCII:} \texttt{k=0 selected}
+\end{itemize}
+\subsection{Module K --- apparent-horizon thermodynamics}
+\textit{Module key: \texttt{K4\_apparent\_horizon}.}
+\paragraph{(K4.1) \tagbox{STANDARD\_RESULT} \texttt{Hayward\_surface\_gravity}.}
+\begin{equation}
+\kappa_H=\frac{1}{R_H}\bigl(1-\frac{\dot R_H}{2HR_H}\bigr)
+\tag{K4.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Dynamical apparent-horizon surface gravity (Hayward; Cai–Kim).
+\item \textbf{ASCII:} \texttt{Hayward/Cai surface gravity on apparent horizon}
+\end{itemize}
+\paragraph{(K4.2) \tagbox{STANDARD\_RESULT} \texttt{unified\_first\_law}.}
+\begin{equation}
+dE_H=T_H dS_H+W dV_H,\quad T_H=|\kappa_H|/(2\pi),\; S_H=A_H/(4G)
+\tag{K4.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K4.1}, \texttt{G0.4}
+\item \textbf{Soft ancestors:} \texttt{G0.4}
+\item \textbf{Note:} Closes Gap 4: applying S=A/4G to the FLRW apparent horizon is the standard apparent-horizon thermodynamics framework, consistent with Friedmann when the Clausius relation is imposed (Cai–Kim).
+\item \textbf{ASCII:} \texttt{unified first law on apparent horizon}
+\end{itemize}
+\paragraph{(K4.3) \tagbox{CONDITIONAL\_THEOREM} \texttt{Clausius\_recovers\_Friedmann}.}
+\begin{equation}
+\delta Q=T_H dS_H\text{ on apparent horizon }\Rightarrow\text{Friedmann eq.}
+\tag{K4.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{Cai\_Kim\_argument}
+\item \textbf{Depends on:} \texttt{K4.2}, \texttt{J5.1}, \texttt{K3.2}
+\item \textbf{Premises:} \texttt{K4.2}, \texttt{flat FLRW}
+\item \textbf{Soft ancestors:} \texttt{G0.4}, \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}, \texttt{K3.1}
+\item \textbf{Note:} Consistency bridge between Module J local thermo and Module G horizon formulas.
+\item \textbf{ASCII:} \texttt{apparent-horizon Clausius => Friedmann}
+\end{itemize}
+\subsection{Module K --- hard match $\Lambda=\Lambda_S$}
+\textit{Module key: \texttt{K5\_Lambda\_match}.}
+\paragraph{(K5.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{hard\_match\_Lambda\_Lambda\_S}.}
+\begin{equation}
+\bigl(H^2=\Lambda/3\bigr)\wedge\bigl(H\to H_\infty=\sqrt{\pi/(GS_{\max})}\bigr)\;\Rightarrow\;\Lambda=\Lambda_S=\dfrac{3\pi}{GS_{\max}}
+\tag{K5.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{equate\_vacuum\_Friedmann\_to\_attractor\_H}
+\item \textbf{Depends on:} \texttt{J5.1}, \texttt{G7.2}, \texttt{G11.1}, \texttt{G14.2}
+\item \textbf{Premises:} \texttt{J5.1}, \texttt{G0.5}, \texttt{G5.1}, \texttt{late-time vacuum}
+\item \textbf{Symbolic:} \texttt{Eq(Lambda, 3*pi/(G*S\_max))}
+\item \textbf{Verified:} yes --- 3 H\_inf^2 = 3 pi/(G S\_max) = Lambda\_S
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Closes Gap 5: once Module J supplies EFE with integration constant Lambda and Module G supplies H\_infty, vacuum matching FORCES Lambda=Lambda\_S. No informal identification step remains.
+\item \textbf{ASCII:} \texttt{Lambda = Lambda\_S = 3 pi/(G S\_max)  [HARD MATCH]}
+\end{itemize}
+\subsection{Module K --- entropy potential and action}
+\textit{Module key: \texttt{K6\_action\_extremum}.}
+\paragraph{(K6.1) \tagbox{DERIVED} \texttt{reduced\_EH\_FLRW}.}
+\begin{equation}
+S_{\mathrm{EH}}[a]\propto\int dt\,a^3\bigl(6(\dot H+2H^2)-2\Lambda_S\bigr)
+\tag{K6.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{reduce\_EH\_on\_FLRW}
+\item \textbf{Depends on:} \texttt{G17.1}, \texttt{G12.1}, \texttt{G14.1}
+\item \textbf{Soft ancestors:} \texttt{G17.1}
+\item \textbf{Note:} Gibbons-Hawking boundary terms omitted in bulk diagnostic.
+\item \textbf{ASCII:} \texttt{reduced FLRW Einstein-Hilbert action}
+\end{itemize}
+\paragraph{(K6.2) \tagbox{STANDARD\_RESULT} \texttt{EL\_recovers\_Friedmann}.}
+\begin{equation}
+\delta S_{\mathrm{EH}}/\delta a=0\;\Rightarrow\;\text{Friedmann/Raychaudhuri}
+\tag{K6.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K6.1}
+\item \textbf{Soft ancestors:} \texttt{G17.1}
+\item \textbf{Note:} On-shell continuum of histories includes the de Sitter solution.
+\item \textbf{ASCII:} \texttt{Euler-Lagrange of reduced EH => background GR equations}
+\end{itemize}
+\paragraph{(K6.3) \tagbox{DERIVED} \texttt{entropy\_potential}.}
+\begin{equation}
+\Phi(\chi):=S_H(\chi)=S_{\mathrm{early}}+\chi\Delta S,\quad \Phi'(\chi)=\Delta S>0
+\tag{K6.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{define\_entropy\_potential}
+\item \textbf{Depends on:} \texttt{G4.2}
+\item \textbf{Soft ancestors:} \texttt{G4.1}
+\item \textbf{ASCII:} \texttt{Phi(chi)=S\_H(chi) strictly increasing on [0,1]}
+\end{itemize}
+\paragraph{(K6.4) \tagbox{THEOREM} \texttt{Smax\_maximizes\_Phi}.}
+\begin{equation}
+\max_{\chi\in[0,1]}\Phi(\chi)=\Phi(1)=S_{\max}
+\tag{K6.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{endpoint\_maximum\_of\_linear\_Phi}
+\item \textbf{Depends on:} \texttt{K6.3}
+\item \textbf{Soft ancestors:} \texttt{G4.1}
+\item \textbf{Note:} Closes Gap 6 (thermodynamic side): S\_H=S\_max is the unique maximum of the entropy potential on the physical interval.
+\item \textbf{ASCII:} \texttt{S\_max uniquely maximizes Phi on [0,1]}
+\end{itemize}
+\paragraph{(K6.5) \tagbox{CONDITIONAL\_THEOREM} \texttt{gradient\_flow\_is\_EH\_critical\_at\_endpoint}.}
+\begin{equation}
+(\chi\to 1)\Rightarrow(H\to H_\infty)\Rightarrow(H^2=\Lambda_S/3)\text{ is on-shell EH}
+\tag{K6.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{compose\_thermo\_flow\_with\_EH\_criticality}
+\item \textbf{Depends on:} \texttt{K1.4}, \texttt{K5.1}, \texttt{G21.1}, \texttt{K6.2}
+\item \textbf{Premises:} \texttt{K1.1}, \texttt{K5.1}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G17.1}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}, \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}, \texttt{K1.1}, \texttt{K1.3}
+\item \textbf{Note:} Along the Onsager trajectory, the late-time state is an EH critical point. Full off-shell comparison of S\_EH among all a(t) with fixed boundaries still requires GH terms; bulk diagnostic is settled.
+\item \textbf{ASCII:} \texttt{thermo endpoint lands on EH critical point}
+\end{itemize}
+\subsection{Module K --- interacting $Q$-formalism}
+\textit{Module key: \texttt{K7\_Q\_formalism}.}
+\paragraph{(K7.1) \tagbox{STANDARD\_RESULT} \texttt{total\_conservation}.}
+\begin{equation}
+\nabla_\mu T^{\mu\nu}_{\mathrm{tot}}=0\;\Leftrightarrow\;\dot\rho_{\mathrm{tot}}+3H(\rho_{\mathrm{tot}}+P_{\mathrm{tot}})=0
+\tag{K7.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J4.4}, \texttt{J5.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Follows from Bianchi + EFE (or imposed in Module J premises).
+\item \textbf{ASCII:} \texttt{total stress-energy conservation}
+\end{itemize}
+\paragraph{(K7.2) \tagbox{DERIVED} \texttt{split\_with\_transfer}.}
+\begin{equation}
+\dot\rho_m+3H(\rho_m+P_m)=-Q,\quad\dot\rho_S+3H(\rho_S+P_S)=+Q
+\tag{K7.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{decompose\_total\_continuity}
+\item \textbf{Depends on:} \texttt{K7.1}
+\item \textbf{Symbolic:} \texttt{3*H*(P\_m + rho\_m)}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Any split into sectors requires Q\_m + Q\_S = 0 for total conservation.
+\item \textbf{ASCII:} \texttt{interacting split with transfer Q}
+\end{itemize}
+\paragraph{(K7.3) \tagbox{ASSUMED} \texttt{paper\_Q\_choice}.}
+\begin{equation}
+Q=3H(\rho_m+P_m)\quad\text{(effective full transfer of matter enthalpy)}
+\tag{K7.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K7.2}, \texttt{GC.1}
+\item \textbf{Assumptions:} transfer ansatz Q=3H(rho\_m+P\_m)
+\item \textbf{Symbolic:} \texttt{3*H*(P\_m + rho\_m)}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}, \texttt{K7.3}
+\item \textbf{Note:} Closes Gap 8 structurally: the paper's source term is reinterpreted as this Q. Matter is then NOT separately conserved; total is.
+\item \textbf{ASCII:} \texttt{Q = 3H(rho\_m+P\_m)}
+\end{itemize}
+\paragraph{(K7.4) \tagbox{ASSUMED} \texttt{radiation\_passive}.}
+\begin{equation}
+\dot\rho_r+4H\rho_r=0\quad(Q_r=0)
+\tag{K7.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K7.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}, \texttt{K7.4}
+\item \textbf{ASCII:} \texttt{radiation separately conserved unless interaction specified}
+\end{itemize}
+\subsection{Module K --- perturbations and isocurvature}
+\textit{Module key: \texttt{K8\_perturbations}.}
+\paragraph{(K8.1) \tagbox{DERIVED} \texttt{perturbed\_conservation}.}
+\begin{equation}
+\nabla_\mu T_S^{\mu\nu}=Q^\nu,\quad \nabla_\mu T_m^{\mu\nu}=-Q^\nu
+\tag{K8.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{linearize\_covariant\_conservation}
+\item \textbf{Depends on:} \texttt{K7.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Perturbation equations must descend from this identity — not invented.
+\item \textbf{ASCII:} \texttt{perturbed interacting continuity/Euler from nabla T = Q}
+\end{itemize}
+\paragraph{(K8.2) \tagbox{AXIOM} \texttt{density\_contrast}.}
+\begin{equation}
+\delta_S:=\delta\rho_S/\bar\rho_S,\quad \delta_m:=\delta\rho_m/\bar\rho_m
+\tag{K8.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K8.1}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{ASCII:} \texttt{density contrasts}
+\end{itemize}
+\paragraph{(K8.3) \tagbox{DERIVED} \texttt{entropy\_sector\_continuity\_linear}.}
+\begin{equation}
+\dot{\delta\rho_S}+3H(\delta\rho_S+\delta P_S)+(\bar\rho_S+\bar P_S)(\theta_S/a)=\delta Q
+\tag{K8.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{FLRW\_linearization}
+\item \textbf{Depends on:} \texttt{K8.1}, \texttt{K8.2}
+\item \textbf{Premises:} \texttt{K7.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{ASCII:} \texttt{linear continuity for S-sector with delta Q}
+\end{itemize}
+\paragraph{(K8.4) \tagbox{DERIVED} \texttt{delta\_S\_H}.}
+\begin{equation}
+\delta S_H=-\frac{2\pi}{G H^3}\delta H\quad(S_H=\pi/(GH^2))
+\tag{K8.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{linearize\_S\_H}
+\item \textbf{Depends on:} \texttt{G1.5}
+\item \textbf{Symbolic:} \texttt{-2*pi/(G*H**3)}
+\item \textbf{Verified:} yes --- dS\_H/dH = -2 pi/(G H^3)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{Note:} Horizon-entropy perturbation tied to Hubble perturbation.
+\item \textbf{ASCII:} \texttt{delta S\_H = -(2 pi/(G H^3)) delta H}
+\end{itemize}
+\paragraph{(K8.5) \tagbox{DERIVED} \texttt{isocurvature}.}
+\begin{equation}
+S_{mS}:=3(\zeta_m-\zeta_S)\propto \delta_m/\bigl(1+w_m\bigr)-\delta_S/\bigl(1+w_S\bigr)
+\tag{K8.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{define\_relative\_entropy\_perturbation}
+\item \textbf{Depends on:} \texttt{K8.2}, \texttt{K8.3}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Closes Gap 7 at definition+continuity level: isocurvature is derived from sector contrasts. Transfer Q sources relative entropy evolution. Do NOT identify delta S\_H with S\_mS without gauge-ready map.
+\item \textbf{ASCII:} \texttt{gauge-invariant entropy/isocurvature between m and S}
+\end{itemize}
+\paragraph{(K8.6) \tagbox{CONDITIONAL\_THEOREM} \texttt{attractor\_isocurvature\_decay}.}
+\begin{equation}
+w_S\to -1\;\Rightarrow\; c_{a,S}^2\to -1\text{ delicate; }\delta_S\text{ vacuum-like}
+\tag{K8.6}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G11.4}, \texttt{K8.3}
+\item \textbf{Premises:} \texttt{attractor}, \texttt{no anisotropic stress}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}, \texttt{J1.1}, \texttt{J1.2}, \texttt{J1.3}, \texttt{J2.2}, \texttt{J3.1}, \texttt{J4.4}
+\item \textbf{Note:} Late-time S-sector behaves as cosmological constant perturbations (smooth).
+\item \textbf{ASCII:} \texttt{at w\_S->-1, S-sector perturbations approach vacuum (Lambda) behavior}
+\end{itemize}
+\subsection{Module K --- $\chi$ versus $w$}
+\textit{Module key: \texttt{K9\_pheno\_bridge}.}
+\paragraph{(K9.1) \tagbox{LEMMA} \texttt{chi\_not\_identically\_w}.}
+\begin{equation}
+\chi\not\equiv w_S\quad\text{as tensorial/EOS quantities}
+\tag{K9.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{category\_mismatch}
+\item \textbf{Depends on:} \texttt{G4.1}
+\item \textbf{Soft ancestors:} \texttt{G4.1}
+\item \textbf{Note:} Closes Gap 9 (refutation half): chi is an entropy-completion coordinate; w\_S:=P\_S/rho\_S is an equation-of-state parameter. Distinct definitions. Does not depend on the phenomenological sigmoid.
+\item \textbf{ASCII:} \texttt{chi is NOT identically w\_S}
+\end{itemize}
+\paragraph{(K9.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{asymptotic\_agreement}.}
+\begin{equation}
+\chi\to 1\text{ and }w_S\to -1\text{ at the attractor (different targets)}
+\tag{K9.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G10.2}, \texttt{G11.4}
+\item \textbf{Premises:} \texttt{G5.1}, \texttt{matter dilution}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} Asymptotic diagnostics agree that equilibrium is reached; values differ.
+\item \textbf{ASCII:} \texttt{chi->1 while w\_S->-1; both mark late equilibrium}
+\end{itemize}
+\paragraph{(K9.3) \tagbox{PHENOMENOLOGY} \texttt{mixing\_variable\_map}.}
+\begin{equation}
+\text{If }w_{\mathrm{mix}}:=\chi\text{ is }used\text{ as a regime weight,}\text{ then }w_{\mathrm{mix}}(t)=\chi(t)\text{ by definition (phenomenology)}
+\tag{K9.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{K9.1}, \texttt{K1.4}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}, \texttt{K1.1}, \texttt{K1.3}, \texttt{K9.3}
+\item \textbf{Note:} Allowed observational bridge: use chi(t) as the mixing weight replacing the old sigmoid. This is a modeling choice, not a derivation that w\_EOS=chi.
+\item \textbf{ASCII:} \texttt{optional: identify mixing weight with chi (PHENO choice)}
+\end{itemize}
+\subsection{Module K --- Jacobson rigor}
+\textit{Module key: \texttt{K10\_Jacobson\_rigor}.}
+\paragraph{(K10.1) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{Clausius\_domain}.}
+\begin{equation}
+\delta Q=T dS\text{ holds for }instantaneous\text{ local equilibrium pencils}
+\tag{K10.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.2}, \texttt{J2.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.2}, \texttt{J2.2}, \texttt{K10.1}
+\item \textbf{Note:} Outside equilibrium (large theta, sigma), Clausius may need nonequilibrium entropy production terms.
+\item \textbf{ASCII:} \texttt{Clausius domain: local equilibrium horizons}
+\end{itemize}
+\paragraph{(K10.2) \tagbox{DERIVED} \texttt{error\_control}.}
+\begin{equation}
+\frac{d\theta}{d\lambda}+R_{\mu\nu}k^\mu k^\nu=O(\theta^2,\sigma^2)
+\tag{K10.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{expand\_Raychaudhuri}
+\item \textbf{Depends on:} \texttt{J2.1}, \texttt{J2.2}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J2.2}
+\item \textbf{Note:} Closes Gap 10 (error control): Einstein null projection holds up to quadratic nonequilibrium corrections that vanish at the equilibrium pencil.
+\item \textbf{ASCII:} \texttt{Raychaudhuri error O(theta^2, sigma^2) near equilibrium}
+\end{itemize}
+\paragraph{(K10.3) \tagbox{STANDARD\_RESULT} \texttt{area\_law\_corrections}.}
+\begin{equation}
+S=\frac{A}{4G}+S_{\mathrm{corr}}\;\Rightarrow\;\text{modified field equations (e.g. }f(R)\text{)}
+\tag{K10.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{J1.3}
+\item \textbf{Soft ancestors:} \texttt{J1.1}, \texttt{J1.3}
+\item \textbf{Note:} If the area law is corrected, Module J yields modified gravity (Jacobson–type arguments with S≠A/4G). Present EFE assumes S\_corr=0.
+\item \textbf{ASCII:} \texttt{entropy corrections => modified gravity}
+\end{itemize}
+\paragraph{(K10.4) \tagbox{AXIOM} \texttt{gaps\_closure\_summary}.}
+\begin{equation}
+\text{Gaps 1--10 closed at stated epistemic strength (see notes)}
+\tag{K10.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Residual soft content: Copernican (K3.1), minimal mobility (K1.3), transfer ansatz Q (K7.3), flatness k=0 (K3.3), S\_corr=0 (K10.3). These are now explicit — not hidden.
+\item \textbf{ASCII:} \texttt{Module K gap-closure summary}
+\end{itemize}
+\subsection{Module G --- premises}
+\textit{Module key: \texttt{G0\_premises}.}
+\paragraph{(G0.1) \tagbox{ASSUMED} \texttt{FLRW\_flat}.}
+\begin{equation}
+ds^2=-dt^2+a(t)^2 d\mathbf{x}^2\quad(k=0)
+\tag{G0.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} FLRW symmetry; spatial flatness k=0
+\item \textbf{Soft ancestors:} \texttt{G0.1}
+\item \textbf{Note:} Background geometry assumption; NOT derived from horizon thermo.
+\item \textbf{ASCII:} \texttt{flat FLRW}
+\end{itemize}
+\paragraph{(G0.2) \tagbox{AXIOM} \texttt{Hubble\_def}.}
+\begin{equation}
+H\equiv\dot a/a
+\tag{G0.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Symbolic:} \texttt{Eq(H, a\_dot/a)}
+\item \textbf{Note:} Definition of the Hubble parameter.
+\item \textbf{ASCII:} \texttt{H = a\_dot/a}
+\end{itemize}
+\paragraph{(G0.3) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{R\_H\_identification}.}
+\begin{equation}
+R_H=1/H
+\tag{G0.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G0.1}, \texttt{G0.2}
+\item \textbf{Assumptions:} apparent Hubble horizon = 1/H for flat FLRW
+\item \textbf{Symbolic:} \texttt{Eq(R\_H, 1/H)}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}
+\item \textbf{Note:} Apparent/Hubble horizon for flat FLRW (c=1). Domain: NOT automatically identical to particle/event horizons. STANDARD\_RESULT in flat FLRW apparent-horizon literature; APPLICATION to thermo here is the modeling choice.
+\item \textbf{ASCII:} \texttt{R\_H = 1/H}
+\end{itemize}
+\paragraph{(G0.4) \tagbox{JUSTIFIED\_ASSUMPTION} \texttt{BH\_entropy\_application}.}
+\begin{equation}
+S_H=A_H/(4G)
+\tag{G0.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} BH entropy law applied to apparent Hubble horizon
+\item \textbf{Soft ancestors:} \texttt{G0.4}
+\item \textbf{Note:} Bekenstein–Hawking is a STANDARD\_RESULT for black-hole event horizons / some causal horizons. Its APPLICATION to the FLRW apparent horizon is an assumption of this framework (P1). Possible QG area corrections not included.
+\item \textbf{ASCII:} \texttt{S\_H = A\_H/(4G)}
+\end{itemize}
+\paragraph{(G0.5) \tagbox{ASSUMED} \texttt{S\_max\_finite}.}
+\begin{equation}
+0<S_{\max}<\infty
+\tag{G0.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} finite maximum horizon entropy
+\item \textbf{Soft ancestors:} \texttt{G0.5}
+\item \textbf{Note:} Finite holographic entropy budget. REQUIRED for H\_∞>0. Justification: finite de Sitter horizon area ⇒ finite S\_H. If S\_max=∞ then H\_∞→0 and Λ\_S→0 (no positive-H attractor).
+\item \textbf{ASCII:} \texttt{0 < S\_max < ∞}
+\end{itemize}
+\paragraph{(G0.6) \tagbox{ASSUMED} \texttt{GSL}.}
+\begin{equation}
+\dot S_{\mathrm{tot}}\ge 0
+\tag{G0.6}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} generalized second law
+\item \textbf{Soft ancestors:} \texttt{G0.6}
+\item \textbf{Note:} GSL postulate. Constrains thermodynamic arrow; does NOT uniquely determine H(t), χ̇, or a de Sitter endpoint (see counterexamples).
+\item \textbf{ASCII:} \texttt{S\_tot\_dot >= 0}
+\end{itemize}
+\subsection{Module G --- horizon geometry and $S_H$}
+\textit{Module key: \texttt{G1\_geometry}.}
+\paragraph{(G1.1) \tagbox{AXIOM} \texttt{R\_H}.}
+\begin{equation}
+R_H=1/H
+\tag{G1.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{adopt\_horizon\_radius}
+\item \textbf{Depends on:} \texttt{G0.3}
+\item \textbf{Symbolic:} \texttt{1/H}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}
+\item \textbf{ASCII:} \texttt{R\_H = 1/H}
+\end{itemize}
+\paragraph{(G1.2) \tagbox{DERIVED} \texttt{A\_H\_def}.}
+\begin{equation}
+A_H=4\pi R_H^2
+\tag{G1.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{sphere\_area}
+\item \textbf{Depends on:} \texttt{G1.1}
+\item \textbf{Symbolic:} \texttt{4*pi*R\_H**2}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}
+\item \textbf{Note:} Do not jump from R\_H to S\_H — area is intermediate.
+\item \textbf{ASCII:} \texttt{A\_H = 4π R\_H^2}
+\end{itemize}
+\paragraph{(G1.3) \tagbox{DERIVED} \texttt{A\_H}.}
+\begin{equation}
+A_H=4\pi/H^2
+\tag{G1.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{substitute\_R\_H}
+\item \textbf{Depends on:} \texttt{G1.1}, \texttt{G1.2}
+\item \textbf{Symbolic:} \texttt{4*pi/H**2}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}
+\item \textbf{ASCII:} \texttt{A\_H = 4π/H^2}
+\end{itemize}
+\paragraph{(G1.4) \tagbox{DERIVED} \texttt{S\_H\_from\_A}.}
+\begin{equation}
+S_H=A_H/(4G)=(1/(4G))(4\pi/H^2)
+\tag{G1.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{apply\_BH\_entropy}
+\item \textbf{Depends on:} \texttt{G1.3}, \texttt{G0.4}
+\item \textbf{Premises:} \texttt{G0.4}
+\item \textbf{Symbolic:} \texttt{pi/(G*H**2)}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{ASCII:} \texttt{S\_H = A\_H/(4G)}
+\end{itemize}
+\paragraph{(G1.5) \tagbox{DERIVED} \texttt{S\_H}.}
+\begin{equation}
+S_H=\pi/(G H^2)
+\tag{G1.5}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{simplify}
+\item \textbf{Depends on:} \texttt{G1.4}
+\item \textbf{Premises:} \texttt{G0.4}
+\item \textbf{Symbolic:} \texttt{pi/(G*H**2)}
+\item \textbf{Verified:} yes --- S\_H simplifies to π/(G H^2)
+\item \textbf{Dimensions:} ok
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{Note:} CLAIM A. π retained. Horizon entropy as geometric function of H.
+\item \textbf{ASCII:} \texttt{S\_H = π/(G H^2)}
+\end{itemize}
+\subsection{Module G --- monotonicity}
+\textit{Module key: \texttt{G2\_monotonicity}.}
+\paragraph{(G2.1) \tagbox{DERIVED} \texttt{S\_H\_dot}.}
+\begin{equation}
+\dot S_H=-(2\pi/G)\,(\dot H/H^3)
+\tag{G2.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{differentiate\_wrt\_t\_via\_chain}
+\item \textbf{Depends on:} \texttt{G1.5}
+\item \textbf{Symbolic:} \texttt{-2*pi*Hdot/(G*H**3)}
+\item \textbf{Verified:} yes --- Ṡ\_H formula matches Version 0
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{ASCII:} \texttt{S\_H\_dot = -(2π/G) Hdot/H^3}
+\end{itemize}
+\paragraph{(G2.2) \tagbox{THEOREM} \texttt{Theorem\_2\_2\_monotonicity}.}
+\begin{equation}
+H>0,G>0\Rightarrow \dot S_H\ge 0\Leftrightarrow \dot H\le 0
+\tag{G2.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{sign\_analysis\_of\_prefactor}
+\item \textbf{Depends on:} \texttt{G2.1}
+\item \textbf{Assumptions:} H>0; G>0
+\item \textbf{Verified:} yes --- prefactor=2*pi/(G*H**3) > 0 under H,G>0 ⇒ sign(Ṡ\_H)=-sign(Ḣ)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{Note:} LEMMA/THEOREM: monotonicity only. Prefactor 2π/(G H^3)>0. Does NOT prove a de Sitter attractor.
+\item \textbf{ASCII:} \texttt{Ṡ\_H≥0 ⇔ Ḣ≤0}
+\end{itemize}
+\subsection{Module G --- generalized second law}
+\textit{Module key: \texttt{G3\_GSL}.}
+\paragraph{(G3.1) \tagbox{ASSUMED} \texttt{S\_tot}.}
+\begin{equation}
+S_{\mathrm{tot}}=S_H+S_m+S_{\mathrm{fields}}
+\tag{G3.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Soft ancestors:} \texttt{G3.1}
+\item \textbf{Note:} Additive coarse-graining; microphysics of S\_m, S\_fields open.
+\item \textbf{ASCII:} \texttt{S\_tot = S\_H + S\_m + S\_fields}
+\end{itemize}
+\paragraph{(G3.2) \tagbox{DERIVED} \texttt{P\_production}.}
+\begin{equation}
+P\equiv\dot S_{\mathrm{tot}}=\dot S_H+\dot S_m+\dot S_{\mathrm{fields}}
+\tag{G3.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{differentiate}
+\item \textbf{Depends on:} \texttt{G3.1}
+\item \textbf{Soft ancestors:} \texttt{G3.1}
+\item \textbf{ASCII:} \texttt{P = S\_tot\_dot}
+\end{itemize}
+\paragraph{(G3.3) \tagbox{ASSUMED} \texttt{GSL\_inequality}.}
+\begin{equation}
+P\ge 0
+\tag{G3.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G0.6}, \texttt{G3.2}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}
+\item \textbf{Note:} GSL ⇏ unique χ̇ or unique de Sitter endpoint.
+\item \textbf{ASCII:} \texttt{P >= 0}
+\end{itemize}
+\paragraph{(G3.4) \tagbox{LEMMA} \texttt{GSL\_not\_unique\_closure}.}
+\begin{equation}
+\mathrm{GSL}\not\Rightarrow\text{unique }\dot\chi
+\tag{G3.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{logical\_underdetermination}
+\item \textbf{Depends on:} \texttt{G3.3}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}
+\item \textbf{Note:} Proven by counterexample module: many H(t) obey GSL without dS.
+\item \textbf{ASCII:} \texttt{GSL does not uniquely determine chi\_dot}
+\end{itemize}
+\subsection{Module G --- entropy completion $\chi$}
+\textit{Module key: \texttt{G4\_chi}.}
+\paragraph{(G4.1) \tagbox{ASSUMED} \texttt{chi\_def}.}
+\begin{equation}
+\chi=(S_H-S_{\mathrm{early}})/(S_{\max}-S_{\mathrm{early}})\in[0,1]
+\tag{G4.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Assumptions:} S\_max ≠ S\_early; χ∈[0,1]
+\item \textbf{Soft ancestors:} \texttt{G4.1}
+\item \textbf{Note:} Model coordinate — NOT fundamental geometry; NOT equation-of-state w.
+\item \textbf{ASCII:} \texttt{chi = (S\_H-S\_early)/(S\_max-S\_early)}
+\end{itemize}
+\paragraph{(G4.2) \tagbox{DERIVED} \texttt{S\_of\_chi}.}
+\begin{equation}
+S_H=S_{\mathrm{early}}+\chi(S_{\max}-S_{\mathrm{early}})
+\tag{G4.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{invert\_chi\_definition}
+\item \textbf{Depends on:} \texttt{G4.1}
+\item \textbf{Symbolic:} \texttt{S\_early + chi*(-S\_early + S\_max)}
+\item \textbf{Soft ancestors:} \texttt{G4.1}
+\item \textbf{ASCII:} \texttt{S\_H = S\_early + chi*(S\_max-S\_early)}
+\end{itemize}
+\subsection{Module G --- thermodynamic closure}
+\textit{Module key: \texttt{G5\_closure}.}
+\paragraph{(G5.1) \tagbox{ASSUMED} \texttt{Gamma\_class}.}
+\begin{equation}
+\dot\chi=\Gamma(\chi),\;\Gamma(0)=\Gamma(1)=0,\;\Gamma>0\text{ on }(0,1)
+\tag{G5.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G3.4}, \texttt{G4.1}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Allowed closure class. Conclusions H→H\_∞ from χ→1 are class-robust; transient details are model-dependent.
+\item \textbf{ASCII:} \texttt{chi\_dot = Gamma(chi) in fixed-point class}
+\end{itemize}
+\paragraph{(G5.2) \tagbox{ASSUMED} \texttt{Gamma\_logistic}.}
+\begin{equation}
+\Gamma(\chi)=\gamma\chi(1-\chi),\quad\gamma>0
+\tag{G5.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G5.1}
+\item \textbf{Assumptions:} logistic thermodynamic closure
+\item \textbf{Symbolic:} \texttt{chi*gamma*(1 - chi)}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} Minimal polynomial member of Γ-class. Motivated by fixed points at 0,1 and Γ>0 on (0,1). NOT derived from GSL.
+\item \textbf{ASCII:} \texttt{Gamma = gamma*chi*(1-chi)}
+\end{itemize}
+\subsection{Module G --- thermodynamic equation of motion}
+\textit{Module key: \texttt{G6\_EOM}.}
+\paragraph{(G6.1) \tagbox{DERIVED} \texttt{H\_of\_S}.}
+\begin{equation}
+H=\sqrt{\pi/(G S_H)}\quad(H>0)
+\tag{G6.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{invert\_S\_H}
+\item \textbf{Depends on:} \texttt{G1.5}
+\item \textbf{Symbolic:} \texttt{sqrt(pi)/(sqrt(G)*sqrt(S\_H))}
+\item \textbf{Verified:} yes --- H^2 = π/(G S\_H)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{ASCII:} \texttt{H = sqrt(π/(G S\_H))}
+\end{itemize}
+\paragraph{(G6.2) \tagbox{DERIVED} \texttt{dH\_dS}.}
+\begin{equation}
+dH/dS_H=-H/(2 S_H)
+\tag{G6.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{differentiate}
+\item \textbf{Depends on:} \texttt{G6.1}
+\item \textbf{Symbolic:} \texttt{-sqrt(pi)/(2*sqrt(G)*S\_H**(3/2))}
+\item \textbf{Verified:} yes --- dH/dS\_H = -H/(2 S\_H)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}
+\item \textbf{ASCII:} \texttt{dH/dS\_H = -H/(2 S\_H)}
+\end{itemize}
+\paragraph{(G6.3) \tagbox{DERIVED} \texttt{S\_H\_dot\_chi}.}
+\begin{equation}
+\dot S_H=(S_{\max}-S_{\mathrm{early}})\dot\chi
+\tag{G6.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{chain\_rule}
+\item \textbf{Depends on:} \texttt{G4.2}, \texttt{G5.2}
+\item \textbf{Premises:} \texttt{G5.2}
+\item \textbf{Symbolic:} \texttt{chi*gamma*(1 - chi)*(-S\_early + S\_max)}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{S\_H\_dot = (S\_max-S\_early)*chi\_dot}
+\end{itemize}
+\paragraph{(G6.4) \tagbox{DERIVED} \texttt{thermo\_EOM}.}
+\begin{equation}
+\dot H=-(H/(2S_H))(S_{\max}-S_{\mathrm{early}})\gamma\chi(1-\chi)
+\tag{G6.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{compose\_chain\_rule}
+\item \textbf{Depends on:} \texttt{G6.2}, \texttt{G6.3}, \texttt{G5.2}
+\item \textbf{Premises:} \texttt{G5.2}, \texttt{G4.1}
+\item \textbf{Symbolic:} \texttt{-H*chi*gamma*(S\_early - S\_max)*(chi - 1)/(2*S\_H)}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} Central thermodynamic background EOM (Version 0).
+\item \textbf{ASCII:} \texttt{Hdot = -(H/(2 S\_H))*(S\_max-S\_early)*gamma*chi*(1-chi)}
+\end{itemize}
+\subsection{Module G --- equilibrium / $H_\infty$}
+\textit{Module key: \texttt{G7\_equilibrium}.}
+\paragraph{(G7.1) \tagbox{DERIVED} \texttt{fixed\_points}.}
+\begin{equation}
+\dot\chi=0\Rightarrow\chi=0\text{ or }\chi=1
+\tag{G7.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{solve\_Gamma\_equals\_zero}
+\item \textbf{Depends on:} \texttt{G5.2}
+\item \textbf{Premises:} \texttt{G5.2}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{fixed points chi=0 and chi=1}
+\end{itemize}
+\paragraph{(G7.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{H\_infty}.}
+\begin{equation}
+H_\infty=\sqrt{\pi/(G S_{\max})}>0
+\tag{G7.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{S\_H→S\_max then invert}
+\item \textbf{Depends on:} \texttt{G1.5}, \texttt{G0.5}, \texttt{G4.2}, \texttt{G5.1}
+\item \textbf{Premises:} \texttt{G0.5}, \texttt{G5.1}
+\item \textbf{Symbolic:} \texttt{sqrt(pi)/(sqrt(G)*sqrt(S\_max))}
+\item \textbf{Verified:} yes --- H\_∞² = π/(G S\_max)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} CLAIM B. Existence of positive H\_∞ CONDITIONAL on finite S\_max.
+\item \textbf{ASCII:} \texttt{H\_infty = sqrt(π/(G S\_max)) > 0}
+\end{itemize}
+\subsection{Module G --- stability}
+\textit{Module key: \texttt{G8\_stability}.}
+\paragraph{(G8.1) \tagbox{DERIVED} \texttt{linearization}.}
+\begin{equation}
+\chi=1-\varepsilon\;\Rightarrow\;\dot\varepsilon=-\gamma\varepsilon+O(\varepsilon^2)
+\tag{G8.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{perturb\_and\_linearize}
+\item \textbf{Depends on:} \texttt{G5.2}
+\item \textbf{Premises:} \texttt{G5.2}
+\item \textbf{Symbolic:} \texttt{-eps*gamma}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{eps\_dot = -gamma*eps}
+\end{itemize}
+\paragraph{(G8.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{stability\_eigenvalue}.}
+\begin{equation}
+\lambda=-\gamma<0\;\Rightarrow\;\chi\to 1\;\Rightarrow\;H\to H_\infty
+\tag{G8.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{linear\_ODE\_stability}
+\item \textbf{Depends on:} \texttt{G8.1}, \texttt{G7.2}, \texttt{G6.1}
+\item \textbf{Premises:} \texttt{G5.2}, \texttt{G0.5}
+\item \textbf{Symbolic:} \texttt{-gamma}
+\item \textbf{Verified:} yes --- λ = -γ
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} CLAIM C. Stability theorem WITHIN the assumed logistic closure (and more generally for Γ'(1)<0). Numerics do not replace this.
+\item \textbf{ASCII:} \texttt{lambda = -gamma < 0}
+\end{itemize}
+\paragraph{(G8.3) \tagbox{CONDITIONAL\_THEOREM} \texttt{chi0\_unstable}.}
+\begin{equation}
+\chi=0\text{ linearized: }\dot\chi=\gamma\chi\;\Rightarrow\;\lambda=+\gamma>0
+\tag{G8.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{linearize\_about\_zero}
+\item \textbf{Depends on:} \texttt{G5.2}
+\item \textbf{Premises:} \texttt{G5.2}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} Physical interval [0,1] is forward-invariant for logistic flow.
+\item \textbf{ASCII:} \texttt{chi=0 unstable (lambda=+gamma)}
+\end{itemize}
+\subsection{Module G --- de Sitter expansion}
+\textit{Module key: \texttt{G9\_expansion}.}
+\paragraph{(G9.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{a\_deSitter}.}
+\begin{equation}
+a(t)=a_0 e^{H_\infty t}
+\tag{G9.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{integrate\_H\_equals\_H\_infty}
+\item \textbf{Depends on:} \texttt{G0.2}, \texttt{G7.2}, \texttt{G8.2}
+\item \textbf{Premises:} \texttt{G0.5}, \texttt{G5.2}
+\item \textbf{Symbolic:} \texttt{a0*exp(H\_infty*t)}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} CLAIM D. Accelerated: ä = H\_∞² a > 0.
+\item \textbf{ASCII:} \texttt{a = a0 exp(H\_infty t)}
+\end{itemize}
+\subsection{Module G --- exact solutions}
+\textit{Module key: \texttt{G10\_exact}.}
+\paragraph{(G10.1) \tagbox{DERIVED} \texttt{chi\_exact}.}
+\begin{equation}
+\chi(t)=\chi_0 e^{\gamma(t-t_0)}/[1-\chi_0+\chi_0 e^{\gamma(t-t_0)}]
+\tag{G10.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{solve\_separable\_ODE}
+\item \textbf{Depends on:} \texttt{G5.2}
+\item \textbf{Premises:} \texttt{G5.2}
+\item \textbf{Symbolic:} \texttt{chi0*exp(gamma*(t - t0))/(chi0*exp(gamma*(t - t0)) - chi0 + 1)}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} t\_crit is optional reparametrization of C; IC form preferred.
+\item \textbf{ASCII:} \texttt{logistic exact solution}
+\end{itemize}
+\paragraph{(G10.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{late\_limits}.}
+\begin{equation}
+\lim_{t\to\infty}\chi=1,\;S_H\to S_{\max},\;H\to H_\infty
+\tag{G10.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{take\_limit}
+\item \textbf{Depends on:} \texttt{G10.1}, \texttt{G4.2}, \texttt{G6.1}, \texttt{G7.2}
+\item \textbf{Premises:} \texttt{G5.2}, \texttt{G0.5}
+\item \textbf{Verified:} yes --- lim chi = 1
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{t→∞: chi→1, S\_H→S\_max, H→H\_infty}
+\end{itemize}
+\paragraph{(G10.3) \tagbox{CONDITIONAL\_THEOREM} \texttt{class\_robust\_H\_infty}.}
+\begin{equation}
+(\chi\to 1)\Rightarrow(S_H\to S_{\max})\Rightarrow(H\to\sqrt{\pi/(GS_{\max})})
+\tag{G10.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{composition\_of\_continuous\_maps}
+\item \textbf{Depends on:} \texttt{G5.1}, \texttt{G4.2}, \texttt{G6.1}, \texttt{G0.5}
+\item \textbf{Premises:} \texttt{G5.1}, \texttt{G0.5}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Independent of logistic specifics: any Γ-class dynamics with χ→1 yields the same H\_∞. Logistic is the simplest realization.
+\item \textbf{ASCII:} \texttt{chi→1 ⇒ H→H\_infty (Gamma-class robust)}
+\end{itemize}
+\subsection{Module G --- Friedmann/Raychaudhuri bridge}
+\textit{Module key: \texttt{G11\_GR\_bridge}.}
+\paragraph{(G11.1) \tagbox{STANDARD\_RESULT} \texttt{Friedmann}.}
+\begin{equation}
+H^2=(8\pi G/3)\rho_{\mathrm{tot}}\quad(k=0)
+\tag{G11.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Imported GR (flat FLRW). NOT derived from global Hubble-horizon entropy. Required for enthalpy/w\_S interpretation.
+\item \textbf{ASCII:} \texttt{H^2 = 8πG/3 rho\_tot}
+\end{itemize}
+\paragraph{(G11.2) \tagbox{STANDARD\_RESULT} \texttt{Raychaudhuri}.}
+\begin{equation}
+\dot H=-4\pi G(\rho_{\mathrm{tot}}+P_{\mathrm{tot}})
+\tag{G11.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Imported GR / Raychaudhuri reduction. NOT from global horizon thermo.
+\item \textbf{ASCII:} \texttt{Hdot = -4πG (rho\_tot + P\_tot)}
+\end{itemize}
+\paragraph{(G11.3) \tagbox{CONDITIONAL\_THEOREM} \texttt{enthalpy\_bridge}.}
+\begin{equation}
+\dot H\to 0\Rightarrow\rho_{\mathrm{tot}}+P_{\mathrm{tot}}\to 0
+\tag{G11.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{substitute\_attractor\_into\_Raychaudhuri}
+\item \textbf{Depends on:} \texttt{G11.2}, \texttt{G7.2}, \texttt{G8.2}
+\item \textbf{Premises:} \texttt{G11.2}, \texttt{G5.2}, \texttt{G0.5}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{Hdot→0 ⇒ rho+P → 0}
+\end{itemize}
+\paragraph{(G11.4) \tagbox{CONDITIONAL\_THEOREM} \texttt{w\_S\_eq}.}
+\begin{equation}
+\rho_m,\rho_r\to 0\Rightarrow\rho_S+P_S=0\Rightarrow w_S=-1
+\tag{G11.4}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{restrict\_to\_S\_sector}
+\item \textbf{Depends on:} \texttt{G11.3}
+\item \textbf{Premises:} \texttt{G11.2}, \texttt{matter/radiation dilution}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} Dilution of ordinary matter/radiation is an additional late-time assumption.
+\item \textbf{ASCII:} \texttt{w\_S → -1}
+\end{itemize}
+\subsection{Module G --- asymptotic curvature}
+\textit{Module key: \texttt{G12\_curvature}.}
+\paragraph{(G12.1) \tagbox{STANDARD\_RESULT} \texttt{R\_FLRW}.}
+\begin{equation}
+R=6(\dot H+2H^2)\quad(k=0)
+\tag{G12.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} Flat FLRW Ricci scalar (imported differential geometry).
+\item \textbf{ASCII:} \texttt{R = 6(Hdot + 2 H^2)}
+\end{itemize}
+\paragraph{(G12.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{R\_inf}.}
+\begin{equation}
+R_\infty=12 H_\infty^2=12\pi/(G S_{\max})
+\tag{G12.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{attractor\_limit}
+\item \textbf{Depends on:} \texttt{G12.1}, \texttt{G7.2}
+\item \textbf{Premises:} \texttt{G0.5}, \texttt{G5.1}
+\item \textbf{Symbolic:} \texttt{12*H\_infty**2}
+\item \textbf{Verified:} yes --- R\_∞ = 12π/(G S\_max)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{ASCII:} \texttt{R\_infty = 12 H\_infty^2}
+\end{itemize}
+\subsection{Module G --- asymptotic Einstein tensor}
+\textit{Module key: \texttt{G13\_Einstein\_tensor}.}
+\paragraph{(G13.1) \tagbox{STANDARD\_RESULT} \texttt{R\_mu\_nu\_inf}.}
+\begin{equation}
+R^{(\infty)}_{\mu\nu}=3 H_\infty^2 g_{\mu\nu}
+\tag{G13.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Note:} de Sitter geometry identity (imported), applied at attractor.
+\item \textbf{ASCII:} \texttt{R\_mu\_nu = 3 H\_infty^2 g\_mu\_nu}
+\end{itemize}
+\paragraph{(G13.2) \tagbox{DERIVED} \texttt{G\_mu\_nu\_inf}.}
+\begin{equation}
+G^{(\infty)}_{\mu\nu}=-3 H_\infty^2 g_{\mu\nu}
+\tag{G13.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{Einstein\_tensor\_algebra}
+\item \textbf{Depends on:} \texttt{G13.1}, \texttt{G12.2}
+\item \textbf{Symbolic:} \texttt{-3*H\_infty**2}
+\item \textbf{Verified:} yes --- 3H² - (1/2)(12H²) = -3H²
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} G = R\_μν - (1/2) R g = 3H²g - 6H²g = -3H²g.
+\item \textbf{ASCII:} \texttt{G\_mu\_nu = -3 H\_infty^2 g\_mu\_nu}
+\end{itemize}
+\subsection{Module G --- thermodynamic $\Lambda_S$}
+\textit{Module key: \texttt{G14\_Lambda}.}
+\paragraph{(G14.1) \tagbox{AXIOM} \texttt{Lambda\_S\_def}.}
+\begin{equation}
+\Lambda_S\equiv 3 H_\infty^2
+\tag{G14.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Symbolic:} \texttt{3*H\_infty**2}
+\item \textbf{Note:} Definition of thermodynamic effective cosmological constant.
+\item \textbf{ASCII:} \texttt{Lambda\_S := 3 H\_infty^2}
+\end{itemize}
+\paragraph{(G14.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{Lambda\_S\_thermo}.}
+\begin{equation}
+\Lambda_S=3\pi/(G S_{\max})
+\tag{G14.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{substitute\_H\_infty}
+\item \textbf{Depends on:} \texttt{G14.1}, \texttt{G7.2}
+\item \textbf{Premises:} \texttt{G0.5}, \texttt{G0.4}
+\item \textbf{Symbolic:} \texttt{3*pi/(G*S\_max)}
+\item \textbf{Verified:} yes --- Λ\_S = 3π/(G S\_max)
+\item \textbf{Dimensions:} ok
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} CLAIM E (half). Model-level consequence, not experimental claim.
+\item \textbf{ASCII:} \texttt{Lambda\_S = 3π/(G S\_max)}
+\end{itemize}
+\subsection{Module G --- asymptotic stress-energy}
+\textit{Module key: \texttt{G15\_stress}.}
+\paragraph{(G15.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{rho\_S\_inf}.}
+\begin{equation}
+\rho_{S,\infty}=3H_\infty^2/(8\pi G)=3/(8 G^2 S_{\max})
+\tag{G15.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{Friedmann\_at\_attractor}
+\item \textbf{Depends on:} \texttt{G11.1}, \texttt{G7.2}, \texttt{G11.4}
+\item \textbf{Premises:} \texttt{G11.1}, \texttt{G0.5}, \texttt{matter dilution}
+\item \textbf{Symbolic:} \texttt{3/(8*G**2*S\_max)}
+\item \textbf{Verified:} yes --- ρ\_S,∞ = 3/(8 G² S\_max)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{rho\_S\_inf = 3/(8 G^2 S\_max)}
+\end{itemize}
+\paragraph{(G15.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{T\_S\_inf}.}
+\begin{equation}
+T^{(S,\infty)}_{\mu\nu}=-\rho_{S,\infty} g_{\mu\nu}=-(\Lambda_S/(8\pi G))g_{\mu\nu}
+\tag{G15.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{perfect\_fluid\_with\_w\_minus\_1}
+\item \textbf{Depends on:} \texttt{G15.1}, \texttt{G11.4}, \texttt{G14.1}
+\item \textbf{Premises:} \texttt{G11.4}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{ASCII:} \texttt{T\_S = -rho\_S g\_mu\_nu}
+\end{itemize}
+\subsection{Module G --- asymptotic Einstein equation}
+\textit{Module key: \texttt{G16\_asymptotic\_EFE}.}
+\paragraph{(G16.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{asymptotic\_Einstein}.}
+\begin{equation}
+G^{(\infty)}_{\mu\nu}+\Lambda_S g_{\mu\nu}=0
+\tag{G16.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{combine\_Einstein\_tensor\_and\_Lambda\_S}
+\item \textbf{Depends on:} \texttt{G13.2}, \texttt{G14.1}, \texttt{G15.2}
+\item \textbf{Premises:} \texttt{G0.5}, \texttt{G5.1}, \texttt{G11.1}, \texttt{G11.2}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}, \texttt{G5.2}
+\item \textbf{Note:} CLAIM E. ASYMPTOTIC vacuum Einstein only.
+\item \textbf{ASCII:} \texttt{G\_mu\_nu^(infty) + Lambda\_S g\_mu\_nu = 0}
+\end{itemize}
+\paragraph{(G16.2) \tagbox{UNPROVEN} \texttt{full\_EFE\_not\_from\_Module\_G}.}
+\begin{equation}
+G_{\mu\nu}+\Lambda g_{\mu\nu}=8\pi G T_{\mu\nu}\quad\text{NOT from Module G; see Module J}
+\tag{G16.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Soft ancestors:} \texttt{G16.2}
+\item \textbf{Note:} Module G stops at asymptotic Einstein. Full local EFE is derived in Module J as CONDITIONAL\_THEOREM J5.1. NOT DERIVED from Module G (global Hubble-horizon) alone: G\_mu\_nu + Lambda g\_mu\_nu = 8 pi G T\_mu\_nu. Module G yields asymptotic G\_mu\_nu^(infty) + Lambda\_S g\_mu\_nu = 0 with Lambda\_S = 3 pi/(G S\_max). Full local EFE is obtained in Module J (Jacobson) as a CONDITIONAL\_THEOREM under Clausius, local Rindler equilibrium, and null Raychaudhuri premises.
+\item \textbf{ASCII:} \texttt{full EFE not from global Hubble module (see Module J)}
+\end{itemize}
+\subsection{Module G --- Einstein--Hilbert action}
+\textit{Module key: \texttt{G17\_action}.}
+\paragraph{(G17.1) \tagbox{ASSUMED} \texttt{S\_EH}.}
+\begin{equation}
+S_{\mathrm{EH}}=\frac{1}{16\pi G}\int\sqrt{-g}(R-2\Lambda)+S_m
+\tag{G17.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Soft ancestors:} \texttt{G17.1}
+\item \textbf{Note:} ASSUMED dynamical theory whose variation reproduces Einstein eq. NOT reverse-engineered from the attractor.
+\item \textbf{ASCII:} \texttt{Einstein-Hilbert action}
+\end{itemize}
+\subsection{Module G --- Lorentzian on-shell action}
+\textit{Module key: \texttt{G18\_Lorentzian}.}
+\paragraph{(G18.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{Lorentzian\_onshell\_density}.}
+\begin{equation}
+S_{\mathrm{EH}}^{\mathrm{dS}}/V_4=\Lambda_S/(8\pi G)=3/(8G^2 S_{\max})
+\tag{G18.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{evaluate\_on\_shell\_dS}
+\item \textbf{Depends on:} \texttt{G17.1}, \texttt{G14.2}, \texttt{G12.2}
+\item \textbf{Premises:} \texttt{G17.1}, \texttt{G0.5}
+\item \textbf{Symbolic:} \texttt{3/(8*G**2*S\_max)}
+\item \textbf{Verified:} yes --- on-shell density checks
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G17.1}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Flat FLRW V\_4 diverges as t→∞; report density / finite region only.
+\item \textbf{ASCII:} \texttt{S\_EH/V4 = 3/(8 G^2 S\_max)}
+\end{itemize}
+\subsection{Module G --- Euclidean on-shell action}
+\textit{Module key: \texttt{G19\_Euclidean}.}
+\paragraph{(G19.1) \tagbox{STANDARD\_RESULT} \texttt{V\_S4}.}
+\begin{equation}
+V_{S^4}=8\pi^2/(3 H_\infty^4)
+\tag{G19.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Symbolic:} \texttt{8*pi**2/(3*H\_infty**4)}
+\item \textbf{Note:} Four-volume of round S⁴ with radius 1/H\_∞.
+\item \textbf{ASCII:} \texttt{V\_S4 = 8π²/(3 H\_infty^4)}
+\end{itemize}
+\paragraph{(G19.2) \tagbox{CONDITIONAL\_THEOREM} \texttt{I\_E\_dS}.}
+\begin{equation}
+I_E^{\mathrm{dS}}=-\pi/(G H_\infty^2)=-S_H(H_\infty)
+\tag{G19.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{Euclidean\_onshell\_evaluation}
+\item \textbf{Depends on:} \texttt{G17.1}, \texttt{G19.1}, \texttt{G14.1}, \texttt{G1.5}
+\item \textbf{Premises:} \texttt{G17.1}, \texttt{Euclidean dS continuation}
+\item \textbf{Symbolic:} \texttt{-pi/(G*H\_infty**2)}
+\item \textbf{Verified:} yes --- I\_E = -π/(G H\_∞²)
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G17.1}
+\item \textbf{ASCII:} \texttt{I\_E = -π/(G H\_infty^2)}
+\end{itemize}
+\paragraph{(G19.3) \tagbox{CONDITIONAL\_THEOREM} \texttt{I\_E\_equals\_minus\_S\_max}.}
+\begin{equation}
+I_E^{\mathrm{dS}}=-S_{\max}
+\tag{G19.3}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{insert\_attractor}
+\item \textbf{Depends on:} \texttt{G19.2}, \texttt{G7.2}
+\item \textbf{Premises:} \texttt{G17.1}, \texttt{G0.5}, \texttt{Euclidean dS continuation}
+\item \textbf{Symbolic:} \texttt{-S\_max}
+\item \textbf{Verified:} yes --- I\_E\_attractor = -S\_max
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G17.1}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Do NOT say 'the universe chooses de Sitter because QG maximizes Z'. Conditional: under Euclidean dS continuation and EH convention, I\_E^{dS}=-S\_dS; attractor sets S\_dS=S\_max => I\_E=-S\_max. Loop: S\_max→H\_∞→Λ\_S→dS→I\_E→-S\_max.
+\item \textbf{ASCII:} \texttt{I\_E = -S\_max}
+\end{itemize}
+\subsection{Module G --- semiclassical partition}
+\textit{Module key: \texttt{G20\_semiclassical}.}
+\paragraph{(G20.1) \tagbox{CONJECTURE} \texttt{Z\_dS}.}
+\begin{equation}
+Z\sim e^{-I_E}\Rightarrow Z_{\mathrm{dS}}\sim e^{S_{\max}}
+\tag{G20.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Depends on:} \texttt{G19.3}
+\item \textbf{Premises:} \texttt{semiclassical Euclidean QG}, \texttt{G19.3}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G17.1}, \texttt{G20.1}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Do NOT say 'the universe chooses de Sitter because QG maximizes Z'. Conditional: under Euclidean dS continuation and EH convention, I\_E^{dS}=-S\_dS; attractor sets S\_dS=S\_max => I\_E=-S\_max.
+\item \textbf{ASCII:} \texttt{Z\_dS ~ e^{S\_max}}
+\end{itemize}
+\subsection{Module G --- EH extremum coincidence}
+\textit{Module key: \texttt{G21\_extremum}.}
+\paragraph{(G21.1) \tagbox{CONDITIONAL\_THEOREM} \texttt{EH\_critical\_coincides\_S\_max}.}
+\begin{equation}
+S_H=S_{\max}\Leftrightarrow H=H_\infty\Leftrightarrow H^2=\Lambda_S/3
+\tag{G21.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{compare\_critical\_points}
+\item \textbf{Depends on:} \texttt{G14.2}, \texttt{G7.2}, \texttt{G6.1}
+\item \textbf{Premises:} \texttt{G14.1}, \texttt{G0.5}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Coincidence of equilibria under shared Λ\_S — NOT an independent derivation of EH from entropy alone.
+\item \textbf{ASCII:} \texttt{S\_max equilibrium = EH critical point under Lambda=Lambda\_S}
+\end{itemize}
+\subsection{Module G --- conservation flag}
+\textit{Module key: \texttt{G\_consistency}.}
+\paragraph{(GC.1) \tagbox{CONSISTENCY\_CHECK} \texttt{Q\_formalism}.}
+\begin{equation}
+\dot\rho_m+3H(\rho_m+P_m)=-Q,\;\dot\rho_S+3H(\rho_S+P_S)=+Q
+\tag{GC.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Symbolic:} \texttt{3*H*(P\_m + rho\_m)}
+\item \textbf{Note:} FLAG: paper sourcing with separately conserved matter may break total ∇\_μ T^{μν}=0. Use Q-cancellation for Bianchi consistency.
+\item \textbf{ASCII:} \texttt{interacting Q with Q\_m + Q\_S = 0}
+\end{itemize}
+\subsection{Module G --- phenomenology quarantine}
+\textit{Module key: \texttt{G\_phenomenology}.}
+\paragraph{(GP.1) \tagbox{PHENOMENOLOGY} \texttt{F\_Pi}.}
+\begin{equation}
+F(\Pi)=F_0+\tfrac12 k\Pi^2
+\tag{GP.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Symbolic:} \texttt{F0 + Pi**2*k/2}
+\item \textbf{Soft ancestors:} \texttt{GP.1}
+\item \textbf{Note:} NOT part of attractor proof.
+\item \textbf{ASCII:} \texttt{F(Pi) = F0 + (1/2) k Pi^2}
+\end{itemize}
+\paragraph{(GP.2) \tagbox{PHENOMENOLOGY} \texttt{w\_logistic\_pheno}.}
+\begin{equation}
+w_S(t)=1/(1+e^{-k(t-t_{\mathrm{crit}})})
+\tag{GP.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Symbolic:} \texttt{1/(1 + exp(-k*(t - t\_crit)))}
+\item \textbf{Soft ancestors:} \texttt{GP.2}
+\item \textbf{Note:} χ ≠ w unless an explicit mapping is derived. Observational layer only.
+\item \textbf{ASCII:} \texttt{w\_S phenomenological sigmoid}
+\end{itemize}
+\subsection{Adversarial lemmas}
+\textit{Module key: \texttt{G\_adversarial}.}
+\paragraph{(GX.1) \tagbox{LEMMA} \texttt{GSL\_insufficient}.}
+\begin{equation}
+\mathrm{GSL}\not\Rightarrow\mathrm{de\ Sitter}
+\tag{GX.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{counterexample}
+\item \textbf{Depends on:} \texttt{G3.3}
+\item \textbf{Soft ancestors:} \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}
+\item \textbf{Note:} GSL ∧ ¬(finite S\_max + closure) ⇏ de Sitter. Do NOT write '2nd law = de Sitter = acceleration'. Rigorous: GSL AND finite S\_max AND thermodynamic closure => stable de Sitter attractor => accelerated expansion.
+\item \textbf{ASCII:} \texttt{GSL alone insufficient for de Sitter}
+\end{itemize}
+\subsection{Limit analysis}
+\textit{Module key: \texttt{G\_limits}.}
+\paragraph{(GL.1) \tagbox{DERIVED} \texttt{S\_max\_to\_infinity}.}
+\begin{equation}
+S_{\max}\to\infty\Rightarrow H_\infty\to 0,\;\Lambda_S\to 0
+\tag{GL.1}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{limit}
+\item \textbf{Depends on:} \texttt{G7.2}, \texttt{G14.2}
+\item \textbf{Symbolic:} \texttt{Eq(lim\_H, 0)}
+\item \textbf{Verified:} yes --- limits at ∞
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} No positive-H thermodynamic attractor if entropy budget unbounded.
+\item \textbf{ASCII:} \texttt{S\_max→∞ ⇒ H\_infty→0, Lambda\_S→0}
+\end{itemize}
+\paragraph{(GL.2) \tagbox{DERIVED} \texttt{S\_max\_to\_zero}.}
+\begin{equation}
+S_{\max}\to 0^+\Rightarrow H_\infty\to\infty
+\tag{GL.2}
+\end{equation}
+\begin{itemize}\setlength{\itemsep}{0.12em}
+\item \textbf{Operation:} \texttt{limit}
+\item \textbf{Depends on:} \texttt{G7.2}
+\item \textbf{Symbolic:} \texttt{Eq(lim\_H, oo)}
+\item \textbf{Soft ancestors:} \texttt{G0.1}, \texttt{G0.3}, \texttt{G0.4}, \texttt{G0.5}, \texttt{G0.6}, \texttt{G3.1}, \texttt{G3.3}, \texttt{G4.1}, \texttt{G5.1}
+\item \textbf{Note:} Physically extreme; likely outside trusted EFT regime.
+\item \textbf{ASCII:} \texttt{S\_max→0+ ⇒ H\_infty→∞}
+\end{itemize}
+\section{Counterexample / adversarial module}
+\subsection{GSL\_without\_de\_Sitter}
+\textbf{Statement.} GSL alone does not force a de Sitter endpoint.
+\par\textbf{Construction.} Take Ḣ = -α H² with 0<α<2 (power-law a∝t^{2/α} style). Then Ṡ\_H = -(2π/G) Ḣ/H³ = (2π/G) α / H > 0, so horizon entropy increases, yet H(t)→0 (not H→H\_∞>0). Choose S\_m, S\_fields so that Ṡ\_tot≥0.
+\par\textbf{Implication.} GSL ∧ ¬(finite S\_max + closure) ⇏ de Sitter. Do NOT write '2nd law = de Sitter = acceleration'. Rigorous: GSL AND finite S\_max AND thermodynamic closure => stable de Sitter attractor => accelerated expansion.
+\subsection{finite\_S\_max\_without\_reaching}
+\textbf{Statement.} Finite S\_max can exist without the system reaching it.
+\par\textbf{Construction.} Set Γ(χ)=0 for all χ (no thermodynamic completion dynamics), or trap χ at χ\_trap∈(0,1) with Γ(χ\_trap)=0 and Γ'(χ\_trap)<0. Then S\_H never reaches S\_max.
+\par\textbf{Implication.} Finite S\_max is necessary but not sufficient; need dynamics with χ→1 (Γ-class + basin).
+\subsection{alternate\_closure\_same\_endpoint}
+\textbf{Statement.} Different closures share H\_∞ but differ in transients.
+\par\textbf{Construction.} Γ₁=γ χ(1-χ) vs Γ₂=γ χ²(1-χ). Both have χ=1 attracting (under suitable IC) ⇒ same H\_∞=sqrt(π/(G S\_max)), different χ(t) and H(t) histories.
+\par\textbf{Implication.} Asymptotic scale is S\_max-controlled; transients are closure-dependent (phenomenology-adjacent).
+\section{Symbolic verification report}
+Checks passed: 33/33.
+\begin{itemize}\setlength{\itemsep}{0.1em}
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G1.5}: S\_H simplifies to π/(G H^2)
+\item [\textcolor{green!50!black}{PASS}] \texttt{dim\_G1.5}: Natural units: [S\_H]=1 and [G H^2]=1 so S\_H ~ 1/(G H^2) is consistent.
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G2.1}: Ṡ\_H formula matches Version 0
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G2.2}: prefactor=2*pi/(G*H**3) > 0 under H,G>0 ⇒ sign(Ṡ\_H)=-sign(Ḣ)
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G6.1}: H^2 = π/(G S\_H)
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G6.2}: dH/dS\_H = -H/(2 S\_H)
+\item [\textcolor{green!50!black}{PASS}] \texttt{Hdot\_nonpositive\_on\_unit\_interval}: For H>0, γ>0, S\_max>S\_early, χ∈[0,1]: all factors ⇒ Ḣ ≤ 0 (equals 0 at χ∈{0,1}).
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G7.2}: H\_∞² = π/(G S\_max)
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G8.2}: λ = -γ
+\item [\textcolor{green!50!black}{PASS}] \texttt{acceleration\_positive}: ä = H\_∞² a > 0 whenever H\_∞>0 and a>0.
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G10.2}: lim chi = 1
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G12.2}: R\_∞ = 12π/(G S\_max)
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G13.2}: 3H² - (1/2)(12H²) = -3H²
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G14.2}: Λ\_S = 3π/(G S\_max)
+\item [\textcolor{green!50!black}{PASS}] \texttt{dim\_G14.2}: [Λ]=L^{-2}; [G S\_max]^{-1} matches in natural units.
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G15.1}: ρ\_S,∞ = 3/(8 G² S\_max)
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G18.1}: on-shell density checks
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G19.2}: I\_E = -π/(G H\_∞²)
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_G19.3}: I\_E\_attractor = -S\_max
+\item [\textcolor{green!50!black}{PASS}] \texttt{EH\_critical\_equals\_H\_infty}: Λ\_S/3 = H\_∞²
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_J3.5}: Null-projection coefficient 1/(8 pi G) matches Einstein coupling.
+\item [\textcolor{green!50!black}{PASS}] \texttt{Jacobson\_algebra\_f\_equals\_R\_over\_2\_minus\_Lambda}: f = R/2 - Lambda rearranges to G\_mu\_nu + Lambda g = 8 pi G T.
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_J5.1}: EFE recovered: R\_mu\_nu-(1/2)R g + Lambda g = 8 pi G T from f=R/2-Lambda.
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_K1.4}: Onsager+minimal M recovers logistic Gamma
+\item [\textcolor{green!50!black}{PASS}] \texttt{Smax\_finite\_from\_finite\_area}: 0 < A\_eq < infty => 0 < S\_max = A\_eq/(4G) < infty
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_K5.1}: 3 H\_inf^2 = 3 pi/(G S\_max) = Lambda\_S
+\item [\textcolor{green!50!black}{PASS}] \texttt{Phi\_max\_at\_chi\_one}: linear Phi(chi) on [0,1] maximized uniquely at chi=1 => S\_max
+\item [\textcolor{green!50!black}{PASS}] \texttt{Q\_m\_plus\_Q\_S\_zero}: By construction Q\_m=-Q, Q\_S=+Q => total continuity holds
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_K8.4}: dS\_H/dH = -2 pi/(G H^3)
+\item [\textcolor{green!50!black}{PASS}] \texttt{counterexample\_GSL\_insufficient}: GSL ∧ ¬(finite S\_max + closure) ⇏ de Sitter. Do NOT write '2nd law = de Sitter = acceleration'. Rigorous: GSL AND finite S\_max AND thermodynamic closure => stable de Sitter attractor => accelerated expansion.
+\item [\textcolor{green!50!black}{PASS}] \texttt{verify\_GL.1}: limits at ∞
+\item [\textcolor{green!50!black}{PASS}] \texttt{gamma\_controls\_timescale\_not\_H\_infty}: H\_∞=sqrt(π/(G S\_max)) independent of γ; λ=-γ ⇒ γ sets approach rate only.
+\item [\textcolor{green!50!black}{PASS}] \texttt{lambda\_equals\_minus\_gamma}: λ=-γ identity
+\end{itemize}
+\section{Proof audit table}
+{\small\begin{longtable}{@{}p{2.1cm}p{3.1cm}p{2.6cm}p{6cm}@{}}
+\toprule ID & Name & Tag & Soft ancestors / note \\ \midrule
+\endfirsthead\toprule ID & Name & Tag & Soft ancestors / note \\ \midrule\endhead
+G0.1 & FLRW\_flat & ASSUMED & G0.1; Background geometry assumption; NOT derived from horizon thermo. \\
+G0.2 & Hubble\_def & AXIOM & ; Definition of the Hubble parameter. \\
+G0.3 & R\_H\_identification & JUSTIFIED\_ASSUMPTION & G0.1,G0.3; Apparent/Hubble horizon for flat FLRW (c=1). Domain: NOT automatically identical to partic \\
+G0.4 & BH\_entropy\_application & JUSTIFIED\_ASSUMPTION & G0.4; Bekenstein–Hawking is a STANDARD\_RESULT for black-hole event horizons / some causal horizo \\
+G0.5 & S\_max\_finite & ASSUMED & G0.5; Finite holographic entropy budget. REQUIRED for H\_∞>0. Justification: finite de Sitter hor \\
+G0.6 & GSL & ASSUMED & G0.6; GSL postulate. Constrains thermodynamic arrow; does NOT uniquely determine H(t), χ̇, or a  \\
+G1.1 & R\_H & AXIOM & G0.1,G0.3 \\
+G1.2 & A\_H\_def & DERIVED & G0.1,G0.3; Do not jump from R\_H to S\_H — area is intermediate. \\
+G1.3 & A\_H & DERIVED & G0.1,G0.3 \\
+G1.4 & S\_H\_from\_A & DERIVED & G0.1,G0.3,G0.4 \\
+G1.5 & S\_H & DERIVED & G0.1,G0.3,G0.4; CLAIM A. π retained. Horizon entropy as geometric function of H. \\
+G2.1 & S\_H\_dot & DERIVED & G0.1,G0.3,G0.4 \\
+G2.2 & Theorem\_2\_2\_monotonicity & THEOREM & G0.1,G0.3,G0.4; LEMMA/THEOREM: monotonicity only. Prefactor 2π/(G H^3)>0. Does NOT prove a de Sitter attra \\
+G3.1 & S\_tot & ASSUMED & G3.1; Additive coarse-graining; microphysics of S\_m, S\_fields open. \\
+G3.2 & P\_production & DERIVED & G3.1 \\
+G3.3 & GSL\_inequality & ASSUMED & G0.6,G3.1,G3.3; GSL ⇏ unique χ̇ or unique de Sitter endpoint. \\
+G3.4 & GSL\_not\_unique\_closure & LEMMA & G0.6,G3.1,G3.3; Proven by counterexample module: many H(t) obey GSL without dS. \\
+G4.1 & chi\_def & ASSUMED & G4.1; Model coordinate — NOT fundamental geometry; NOT equation-of-state w. \\
+G4.2 & S\_of\_chi & DERIVED & G4.1 \\
+G5.1 & Gamma\_class & ASSUMED & G0.6,G3.1,G3.3,G4.1,G5.1; Allowed closure class. Conclusions H→H\_∞ from χ→1 are class-robust; transient detai \\
+G5.2 & Gamma\_logistic & ASSUMED & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; Minimal polynomial member of Γ-class. Motivated by fixed points at 0,1 and Γ>0  \\
+G6.1 & H\_of\_S & DERIVED & G0.1,G0.3,G0.4 \\
+G6.2 & dH\_dS & DERIVED & G0.1,G0.3,G0.4 \\
+G6.3 & S\_H\_dot\_chi & DERIVED & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G6.4 & thermo\_EOM & DERIVED & G0.1,G0.3,G0.4,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; Central thermodynamic background EOM (Version 0). \\
+G7.1 & fixed\_points & DERIVED & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G7.2 & H\_infty & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; CLAIM B. Existence of positive H\_∞ CONDITIONAL on finite S\_max \\
+G8.1 & linearization & DERIVED & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G8.2 & stability\_eigenvalue & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; CLAIM C. Stability theorem WITHIN the assumed logistic clos \\
+G8.3 & chi0\_unstable & CONDITIONAL\_THEOREM & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; Physical interval [0,1] is forward-invariant for logistic flow. \\
+G9.1 & a\_deSitter & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; CLAIM D. Accelerated: ä = H\_∞² a > 0. \\
+G10.1 & chi\_exact & DERIVED & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; t\_crit is optional reparametrization of C; IC form preferred. \\
+G10.2 & late\_limits & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G10.3 & class\_robust\_H\_infty & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; Independent of logistic specifics: any Γ-class dynamics with χ→1 \\
+G11.1 & Friedmann & STANDARD\_RESULT & ; Imported GR (flat FLRW). NOT derived from global Hubble-horizon entropy. Required for enth \\
+G11.2 & Raychaudhuri & STANDARD\_RESULT & ; Imported GR / Raychaudhuri reduction. NOT from global horizon thermo. \\
+G11.3 & enthalpy\_bridge & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G11.4 & w\_S\_eq & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; Dilution of ordinary matter/radiation is an additional late \\
+G12.1 & R\_FLRW & STANDARD\_RESULT & ; Flat FLRW Ricci scalar (imported differential geometry). \\
+G12.2 & R\_inf & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1 \\
+G13.1 & R\_mu\_nu\_inf & STANDARD\_RESULT & ; de Sitter geometry identity (imported), applied at attractor. \\
+G13.2 & G\_mu\_nu\_inf & DERIVED & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; G = R\_μν - (1/2) R g = 3H²g - 6H²g = -3H²g. \\
+G14.1 & Lambda\_S\_def & AXIOM & ; Definition of thermodynamic effective cosmological constant. \\
+G14.2 & Lambda\_S\_thermo & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; CLAIM E (half). Model-level consequence, not experimental claim. \\
+G15.1 & rho\_S\_inf & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G15.2 & T\_S\_inf & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2 \\
+G16.1 & asymptotic\_Einstein & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; CLAIM E. ASYMPTOTIC vacuum Einstein only. \\
+G16.2 & full\_EFE\_not\_from\_Module & UNPROVEN & G16.2; Module G stops at asymptotic Einstein. Full local EFE is derived in Module J as CONDITIONA \\
+G17.1 & S\_EH & ASSUMED & G17.1; ASSUMED dynamical theory whose variation reproduces Einstein eq. NOT reverse-engineered fr \\
+G18.1 & Lorentzian\_onshell\_density & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G17.1,G3.1,G3.3,G4.1,G5.1; Flat FLRW V\_4 diverges as t→∞; report density / finite re \\
+G19.1 & V\_S4 & STANDARD\_RESULT & ; Four-volume of round S⁴ with radius 1/H\_∞. \\
+G19.2 & I\_E\_dS & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G17.1 \\
+G19.3 & I\_E\_equals\_minus\_S\_max & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G17.1,G3.1,G3.3,G4.1,G5.1; Do NOT say 'the universe chooses de Sitter because QG maxi \\
+G20.1 & Z\_dS & CONJECTURE & G0.1,G0.3,G0.4,G0.5,G0.6,G17.1,G20.1,G3.1,G3.3,G4.1,G5.1; Do NOT say 'the universe chooses de Sitter because Q \\
+G21.1 & EH\_critical\_coincides\_S\_ & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; Coincidence of equilibria under shared Λ\_S — NOT an independent \\
+GC.1 & Q\_formalism & CONSISTENCY\_CHECK & ; FLAG: paper sourcing with separately conserved matter may break total ∇\_μ T^{μν}=0. Use Q- \\
+GP.1 & F\_Pi & PHENOMENOLOGY & GP.1; NOT part of attractor proof. \\
+GP.2 & w\_logistic\_pheno & PHENOMENOLOGY & GP.2; χ ≠ w unless an explicit mapping is derived. Observational layer only. \\
+J0.1 & module\_boundary & AXIOM & ; Do not feed J-results backward into G-theorems as if G alone derived the EFE. Architecture \\
+J1.1 & local\_Rindler\_horizons & JUSTIFIED\_ASSUMPTION & J1.1; Jacobson: enough local acceleration horizons exist that the null-projection condition for  \\
+J1.2 & Clausius & JUSTIFIED\_ASSUMPTION & J1.1,J1.2; Clausius relation for heat across the local horizon (equilibrium). \\
+J1.3 & entropy\_area & JUSTIFIED\_ASSUMPTION & J1.1,J1.3; Horizon entropy proportional to area. Standard BH value eta=1/G. If eta were field-depende \\
+J1.4 & Unruh\_temperature & STANDARD\_RESULT & J1.1; Unruh temperature for acceleration kappa of the local Rindler horizon. \\
+J2.1 & Raychaudhuri\_null & STANDARD\_RESULT & ; k^μ = null generator; λ affine parameter; θ expansion; σ shear; ω vorticity. \\
+J2.2 & local\_equilibrium & JUSTIFIED\_ASSUMPTION & J1.1,J2.2; At the instant the horizon is chosen through p: vanishing expansion and shear (and vortici \\
+J2.3 & Raychaudhuri\_linearized & DERIVED & J1.1,J2.2 \\
+J2.4 & area\_variation & STANDARD\_RESULT & ; First-order area change of a pencil of generators. \\
+J3.1 & heat\_flux & JUSTIFIED\_ASSUMPTION & J1.1,J3.1; Matter energy flux across the horizon. chi^μ ≈ -κ λ k^μ on the approximate Killing horizon \\
+J3.2 & Clausius\_expanded & DERIVED & J1.1,J1.2,J1.3 \\
+J3.3 & integrate\_by\_parts\_theta & DERIVED & J1.1,J2.2; Boundary term vanishes for the local pencil at equilibrium. \\
+J3.4 & equate\_fluxes & DERIVED & J1.1,J1.2,J1.3,J2.2,J3.1 \\
+J3.5 & null\_projection & CONDITIONAL\_THEOREM & J1.1,J1.2,J1.3,J2.2,J3.1; Because local Rindler horizons exist in every null direction at each p, the integran \\
+J4.1 & null\_tensor\_lemma & LEMMA & ; Standard GR lemma: a symmetric tensor orthogonal to all null vectors is proportional to th \\
+J4.2 & Einstein\_up\_to\_scalar & CONDITIONAL\_THEOREM & J1.1,J1.2,J1.3,J2.2,J3.1 \\
+J4.3 & contracted\_Bianchi & STANDARD\_RESULT & ; Contracted Bianchi identity (differential geometry). \\
+J4.4 & stress\_energy\_conservation & JUSTIFIED\_ASSUMPTION & J4.4; Local matter conservation. Needed to fix the integration function as a cosmological consta \\
+J4.5 & Lambda\_integration\_constan & CONDITIONAL\_THEOREM & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Λ appears as an integration constant of the local thermodynamic derivation — no \\
+J5.1 & Einstein\_field\_equations & CONDITIONAL\_THEOREM & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; CLAIM F (Module J): full local Einstein equation, CONDITIONAL on local Rindler  \\
+J5.2 & Lambda\_vs\_Lambda\_S\_point & CONDITIONAL\_THEOREM & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Hard match is completed in Module K (K5.1), not left as informal matching. \\
+J5.3 & architecture\_J\_then\_G & AXIOM & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Research architecture. Module G remains valid as a standalone asymptotic analys \\
+K1.1 & Onsager\_mobility & JUSTIFIED\_ASSUMPTION & K1.1; Bounded entropy-completion coordinate: mobility vanishes at endpoints so chi=0,1 are fixed \\
+K1.2 & dS\_dchi & DERIVED & G4.1 \\
+K1.3 & minimal\_mobility & JUSTIFIED\_ASSUMPTION & K1.1,K1.3; Minimal nonnegative polynomial mobility with simple zeros at 0,1. Uniqueness within polyno \\
+K1.4 & Gamma\_from\_Onsager & CONDITIONAL\_THEOREM & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2,K1.1,K1.3; Closes Gap 1: logistic is derived from Onsager gradient flow of S\_H  \\
+K1.5 & Gamma\_class\_from\_mobility & CONDITIONAL\_THEOREM & G4.1,K1.1; Class robustness: attractor H\_infty depends only on chi->1, not on M details. \\
+K2.1 & covariant\_entropy\_bound & STANDARD\_RESULT & ; Covariant entropy bound: entropy on a lightsheet <= boundary area/4G. \\
+K2.2 & apparent\_horizon\_bound & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4; With equality in the BH/equilibrium case used in Module G. \\
+K2.3 & Smax\_finite & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5; Closes Gap 2: S\_max is finite whenever the equilibrium horizon area is finite and positi \\
+K3.1 & Copernican & JUSTIFIED\_ASSUMPTION & K3.1; Cannot be derived from local horizon thermo alone. Standard cosmological symmetry assumpti \\
+K3.2 & FLRW\_from\_EFE\_plus\_Coper & CONDITIONAL\_THEOREM & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4,K3.1; Closes Gap 3 at the standard level: FLRW is derived from Module-J EFE plus \\
+K3.3 & flatness\_choice & ASSUMED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4,K3.1,K3.3; Spatial flatness remains a branch choice (or inflationary late-time a \\
+K4.1 & Hayward\_surface\_gravity & STANDARD\_RESULT & ; Dynamical apparent-horizon surface gravity (Hayward; Cai–Kim). \\
+K4.2 & unified\_first\_law & STANDARD\_RESULT & G0.4; Closes Gap 4: applying S=A/4G to the FLRW apparent horizon is the standard apparent-horizo \\
+K4.3 & Clausius\_recovers\_Friedman & CONDITIONAL\_THEOREM & G0.4,J1.1,J1.2,J1.3,J2.2,J3.1,J4.4,K3.1; Consistency bridge between Module J local thermo and Module G horizon \\
+K5.1 & hard\_match\_Lambda\_Lambda\ & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Closes Gap 5: once Module J suppli \\
+K6.1 & reduced\_EH\_FLRW & DERIVED & G17.1; Gibbons-Hawking boundary terms omitted in bulk diagnostic. \\
+K6.2 & EL\_recovers\_Friedmann & STANDARD\_RESULT & G17.1; On-shell continuum of histories includes the de Sitter solution. \\
+K6.3 & entropy\_potential & DERIVED & G4.1 \\
+K6.4 & Smax\_maximizes\_Phi & THEOREM & G4.1; Closes Gap 6 (thermodynamic side): S\_H=S\_max is the unique maximum of the entropy potentia \\
+K6.5 & gradient\_flow\_is\_EH\_crit & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G17.1,G3.1,G3.3,G4.1,G5.1,G5.2,J1.1,J1.2,J1.3,J2.2,J3.1,J4.4,K1.1,K1.3; Along the Ons \\
+K7.1 & total\_conservation & STANDARD\_RESULT & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Follows from Bianchi + EFE (or imposed in Module J premises). \\
+K7.2 & split\_with\_transfer & DERIVED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Any split into sectors requires Q\_m + Q\_S = 0 for total conservation. \\
+K7.3 & paper\_Q\_choice & ASSUMED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4,K7.3; Closes Gap 8 structurally: the paper's source term is reinterpreted as thi \\
+K7.4 & radiation\_passive & ASSUMED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4,K7.4 \\
+K8.1 & perturbed\_conservation & DERIVED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Perturbation equations must descend from this identity — not invented. \\
+K8.2 & density\_contrast & AXIOM & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4 \\
+K8.3 & entropy\_sector\_continuity\ & DERIVED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4 \\
+K8.4 & delta\_S\_H & DERIVED & G0.1,G0.3,G0.4; Horizon-entropy perturbation tied to Hubble perturbation. \\
+K8.5 & isocurvature & DERIVED & J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Closes Gap 7 at definition+continuity level: isocurvature is derived from secto \\
+K8.6 & attractor\_isocurvature\_dec & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2,J1.1,J1.2,J1.3,J2.2,J3.1,J4.4; Late-time S-sector behaves as \\
+K9.1 & chi\_not\_identically\_w & LEMMA & G4.1; Closes Gap 9 (refutation half): chi is an entropy-completion coordinate; w\_S:=P\_S/rho\_S is \\
+K9.2 & asymptotic\_agreement & CONDITIONAL\_THEOREM & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1,G5.2; Asymptotic diagnostics agree that equilibrium is reached; v \\
+K9.3 & mixing\_variable\_map & PHENOMENOLOGY & G0.6,G3.1,G3.3,G4.1,G5.1,G5.2,K1.1,K1.3,K9.3; Allowed observational bridge: use chi(t) as the mixing weight re \\
+K10.1 & Clausius\_domain & JUSTIFIED\_ASSUMPTION & J1.1,J1.2,J2.2,K10.1; Outside equilibrium (large theta, sigma), Clausius may need nonequilibrium entropy produ \\
+K10.2 & error\_control & DERIVED & J1.1,J2.2; Closes Gap 10 (error control): Einstein null projection holds up to quadratic nonequilibri \\
+K10.3 & area\_law\_corrections & STANDARD\_RESULT & J1.1,J1.3; If the area law is corrected, Module J yields modified gravity (Jacobson–type arguments wi \\
+K10.4 & gaps\_closure\_summary & AXIOM & ; Residual soft content: Copernican (K3.1), minimal mobility (K1.3), transfer ansatz Q (K7.3 \\
+GX.1 & GSL\_insufficient & LEMMA & G0.6,G3.1,G3.3; GSL ∧ ¬(finite S\_max + closure) ⇏ de Sitter. Do NOT write '2nd law = de Sitter = accelerat \\
+GL.1 & S\_max\_to\_infinity & DERIVED & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; No positive-H thermodynamic attractor if entropy budget unbounde \\
+GL.2 & S\_max\_to\_zero & DERIVED & G0.1,G0.3,G0.4,G0.5,G0.6,G3.1,G3.3,G4.1,G5.1; Physically extreme; likely outside trusted EFT regime. \\
+\bottomrule\end{longtable}}
+\section{Final calibrated statement}
+\begin{equation*}
+\boxed{
+\mathrm{GSL}\wedge 0<S_{\max}<\infty\wedge\text{thermodynamic closure}
+\Longrightarrow\text{stable de Sitter attractor}
+\Longrightarrow\text{accelerated expansion}
+}
+\end{equation*}
+Module J yields $G_{\mu\nu}+\Lambda g_{\mu\nu}=8\pi G T_{\mu\nu}$ (conditional). Module K forces $\Lambda=\Lambda_S=3\pi/(G S_{\max})$. Module G yields $G_{\mu\nu}^{(\infty)}+\Lambda_S g_{\mu\nu}=0$ and $I_E^{\mathrm{dS}}=-S_{\max}$.
+\par\vspace{1em}\noindent\textit{Regenerate with: \texttt{python analytical\_proof.py --export-dir .\\proof\_export}}
+\end{document}

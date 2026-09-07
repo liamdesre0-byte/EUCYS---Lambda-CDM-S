@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+title: "ΛCDM+S: Entropy-Extended Cosmology"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: Desre
+    given-names: Liam
+abstract: >-
+  Research software for ΛCDM+S (entropy-extended cosmology). Layer-1
+  first-principles derivation from Hubble-horizon thermodynamics and
+  Layer-3 Bayesian validation against compressed cosmological likelihoods.
+  This citation describes the software package, not a journal article.
+keywords:
+  - cosmology
+  - ΛCDM
+  - horizon thermodynamics
+  - Bayesian inference
+  - scientific software
+license: MIT
+version: "2.0.0"
+date-released: "2026-09-07"
+repository-code: "https://github.com/USER/LambdaCDM-plus-S"
