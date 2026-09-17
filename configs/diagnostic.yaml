@@ -1,0 +1,68 @@
+# Package diagnostic MCMC — NOT the published EUCYS posterior.
+#
+# Use this (or `python scripts/run_validation.py --quick`) for install
+# checks. These sizes are short on purpose and must not be quoted as the
+# written-report chain.
+#
+# Published EUCYS configuration: configs/default.yaml
+#   48 walkers × 50,000 production × 3 chains = 7,200,000 samples
+#   burn-in 2,000 · ESS 75,000 · affine · entropy sector ON
+
+fiducial:
+  H0: 72.8
+  Omega_Lambda: 0.685
+  k: 0.37
+  t_crit: 15.8
+  omega_r0: 9.0e-5
+  S_max: 1.0
+  S_early: 1.0e-3
+
+priors:
+  H0: {mu: 72.8, sigma: 2.059}
+  Omega_Lambda: {mu: 0.685, sigma: 0.012}
+  k: {mu: 0.37, sigma: 0.068}
+  t_crit: {mu: 15.8, sigma: 1.408}
+
+analytical_solver:
+  H0: 70.0
+  Omega_m0: 0.30
+  Omega_r0: 9.0e-5
+  gamma: 0.35
+  S_max: 1.0
+  S_early: 1.0e-3
+  chi0: 0.92
+  Obh2: 0.02237
+  z_max: 1100.0
+  n_eval: 2000
+  rtol: 1.0e-8
+  atol: 1.0e-10
+  temperature_mode: dynamical_horizon
+
+mcmc:
+  seed: 8
+  steps: 300
+  chains: 2
+  burn: 50
+  walkers: 10
+  method: metropolis
+  step_frac: 0.4
+  nlive: 25
+  ns_iter: 100
+  theory_nsteps: 400
+  ess_min: 50.0
+  rhat_max: 1.1
+  thin: 1
+  lcdm_limit: false
+  skip_cmb: false
+  skip_prior_predictive: true
+  ppc_runs: 20
+  no_artifacts: true
+  skip_validation: true
+  no_getdist: true
+
+paths:
+  outdir: results
+  data_dir: null
+  export_dir: theory_export
+  validation_out: lcdms_validation_out
+  figures: figures

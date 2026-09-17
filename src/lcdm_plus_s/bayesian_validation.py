@@ -37,12 +37,16 @@ slightly after today). Do NOT remap t_crit→~7 Gyr to force χ0≈0.92.
 Fixed (not sampled): ω_r0, S_max, S_early.
 Derived: Ω_m0 = 1−Ω_Λ−ω_r0,  χ_0 = χ(t_0; k, t_crit).
 
-Run (PowerShell — all MCMC sizes are CLI-controlled, not hard-coded)::
+Published EUCYS MCMC (packaged default)::
+    48 walkers × 50,000 production × 3 affine ensembles = 7,200,000 samples
+    burn-in 2,000 · ESS target 75,000 · entropy sector ON (lcdm_limit=False)
+
+Run (PowerShell — all MCMC sizes are CLI-controlled)::
     python Bayesian_Validationn.py
+    python scripts/run_validation.py --quick          # diagnostic, NOT the paper
+    python Bayesian_Validationn.py --lcdm-limit       # freeze χ(t); NOT the paper
     python Bayesian_Validationn.py --steps 1000 --chains 4 --burn 200
-    python Bayesian_Validationn.py --prod-steps 2000 --burn 400 --chains 4 --walkers 16
     python Bayesian_Validationn.py --ess-min 100 --rhat-max 1.05 --thin 5
-    python Bayesian_Validationn.py --mcmc-method affine --nlive 50 --ns-iter 200 --seed 42
     python Bayesian_Validationn.py --no-getdist   # skip GetDist triangle/1D/2D figures
 
 Every run writes paper artifacts under ``results/`` (figures, tables, reports)
@@ -76,7 +80,17 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
+
+# Published EUCYS written-report MCMC. Packaged CLI/YAML defaults match these
+# numbers so a default run is the paper chain, not a 300-step diagnostic.
+EUCYS_WALKERS = 48
+EUCYS_PROD_STEPS = 50_000
+EUCYS_BURN = 2_000
+EUCYS_CHAINS = 3
+EUCYS_ESS_MIN = 75_000.0
+EUCYS_METHOD = "affine"
+EUCYS_POSTERIOR_SAMPLES = EUCYS_WALKERS * EUCYS_PROD_STEPS * EUCYS_CHAINS  # 7_200_000
 
 # ===========================================================================
 # Part I — Constants
@@ -1024,9 +1038,9 @@ def scope_label_for_figure(
     Examples::
 
         >>> scope_label_for_figure("background")
-        'ΛCDM+S v2.0.0 — background-level ΛCDM+S'
+        'ΛCDM+S v2.1.0 — background-level ΛCDM+S'
         >>> scope_label_for_figure("future")
-        'ΛCDM+S v2.0.0 — future work — not part of current claim'
+        'ΛCDM+S v2.1.0 — future work — not part of current claim'
     """
     label = artifact_scope_label(scope_level)
     prefix = f"ΛCDM+S v{__version__} — " if include_version else ""
@@ -5089,10 +5103,11 @@ def build_production_posterior(
     Raises RuntimeError / FileNotFoundError if real data cannot be loaded.
 
     lcdm_limit
-        Original production path used ``lcdm_limit=True`` (entropy sector
-        frozen to constant Ω_Λ). Keep the default to preserve that
-        numerical behaviour. Pass ``False`` to evaluate the logistic
-        ΛCDM+S background while sampling (H0, Ω_Λ, k, t_crit).
+        Function default remains ``True`` so callers that omit the flag
+        match the original script (entropy sector frozen to constant Ω_Λ).
+        The packaged EUCYS CLI / ``configs/default.yaml`` pass ``False``
+        (``--entropy-sector``) so the published 7.2-million-sample
+        posterior actually varies χ(t).
     """
     if ALLOW_SCAFFOLD_DATASETS:
         raise RuntimeError(
@@ -7641,7 +7656,8 @@ def run_mcmc(posterior: Posterior, nchains: int = 4, nsteps: int = 3000,
              stretch_a: float = 2.0,
              de_gamma: float | None = None,
              de_eps: float = 1e-4,
-             progress: bool | None = None) -> MCMCResult:
+             progress: bool | None = None,
+             nensembles: int = 1) -> MCMCResult:
     """
     Independent MCMC module.  Outputs chains only.
 
@@ -7651,6 +7667,10 @@ def run_mcmc(posterior: Posterior, nchains: int = 4, nsteps: int = 3000,
       "differential_evolution"   — DE-MCMC ensemble
       "hamiltonian"              — NotImplementedError (future)
 
+    nensembles:
+      Independent affine / DE restarts (EUCYS: 3 ensembles × 48 walkers).
+      Metropolis ignores this and uses nchains.
+
     progress:
       True/False force live burn-in + production bars; None → auto (TTY).
     """
@@ -7659,6 +7679,32 @@ def run_mcmc(posterior: Posterior, nchains: int = 4, nsteps: int = 3000,
                          f"choose from {MCMC_METHODS}")
     if method == "hamiltonian":
         hamiltonian_monte_carlo()
+
+    nensembles = max(1, int(nensembles))
+    if nensembles > 1 and method in ("affine", "differential_evolution"):
+        parts = [
+            run_mcmc(
+                posterior, nchains=nchains, nsteps=nsteps, burn=burn,
+                seed=seed + 1009 * (i + 1), step_frac=step_frac,
+                method=method, nwalkers=nwalkers, stretch_a=stretch_a,
+                de_gamma=de_gamma, de_eps=de_eps, progress=progress,
+                nensembles=1,
+            )
+            for i in range(nensembles)
+        ]
+        meta = dict(parts[0].meta)
+        meta["nensembles"] = nensembles
+        return MCMCResult(
+            chains=[c for p in parts for c in p.chains],
+            acceptance=[a for p in parts for a in p.acceptance],
+            names=parts[0].names,
+            method=method,
+            nsteps=nsteps,
+            burn=parts[0].burn,
+            nwalkers=parts[0].nwalkers,
+            seed=seed,
+            meta=meta,
+        )
 
     reg = posterior.registry
     names = tuple(p.name for p in reg.sampled())
@@ -15172,21 +15218,27 @@ def export_paper_artifacts(
 
 @dataclass
 class RunConfig:
-    """CLI-controlled sampler sizes used by main() — nothing fixed in code."""
-    steps: int = 300                 # production MCMC steps per chain/walker
-    chains: int = 2
-    burn: int | None = None          # burn-in; default steps//6
-    walkers: int = 10
+    """CLI-controlled sampler sizes used by main() — nothing fixed in code.
+
+    Packaged defaults match the published EUCYS posterior (48 walkers ×
+    50,000 production × 3 affine ensembles = 7,200,000 samples, burn-in
+    2,000, ESS 75,000, entropy sector ON). Original-script frozen-sector
+    diagnostics live in ``configs/diagnostic.yaml`` / ``--quick``.
+    """
+    steps: int = EUCYS_PROD_STEPS    # production MCMC steps kept after burn-in
+    chains: int = EUCYS_CHAINS
+    burn: int | None = EUCYS_BURN    # burn-in discarded from each walker
+    walkers: int = EUCYS_WALKERS
     nlive: int = 25
     ns_iter: int = 100
     seed: int = 8
     step_frac: float = 0.4
     diag_steps: int | None = None    # Phase-10 diagnostic chain length
     diag_burn: int | None = None     # Phase-10 burn-in override
-    ess_min: float = DIAG_ESS_MIN    # minimum ESS for convergence flag
+    ess_min: float = EUCYS_ESS_MIN   # minimum ESS for convergence flag
     rhat_max: float = DIAG_RHAT_OK   # max Gelman–Rubin R̂ allowed
     thin: int = 1                    # keep every thin-th sample for GetDist/plots
-    mcmc_method: str = "metropolis"  # primary method for paper MCMC
+    mcmc_method: str = EUCYS_METHOD  # primary method for paper MCMC
     theory_nsteps: int = 400         # background solver steps in ModifiedCLASS
     skip_validation: bool = False
     outdir: str | None = None
@@ -15198,12 +15250,32 @@ class RunConfig:
     no_getdist: bool = False
     skip_prior_predictive: bool = False
     ppc_runs: int = 200              # pre-MCMC prior predictive ensemble size
-    lcdm_limit: bool = True          # original production ModifiedCLASS flag
+    lcdm_limit: bool = False         # published path samples the entropy sector
 
     def resolved_burn(self) -> int:
         if self.burn is not None:
-            return max(0, min(self.burn, max(self.steps - 1, 0)))
+            return max(0, int(self.burn))
         return max(1, self.steps // 6)
+
+    def resolved_nsteps(self) -> int:
+        """Total steps taken per walker/chain = production + burn-in."""
+        return int(self.steps) + int(self.resolved_burn())
+
+    def expected_posterior_samples(self) -> int:
+        if self.mcmc_method in ("affine", "differential_evolution"):
+            return int(self.walkers) * int(self.steps) * int(self.chains)
+        return int(self.chains) * int(self.steps)
+
+    def matches_eucys_published(self) -> bool:
+        return (
+            int(self.walkers) == EUCYS_WALKERS
+            and int(self.steps) == EUCYS_PROD_STEPS
+            and int(self.chains) == EUCYS_CHAINS
+            and int(self.resolved_burn()) == EUCYS_BURN
+            and abs(float(self.ess_min) - EUCYS_ESS_MIN) < 1.0
+            and str(self.mcmc_method) == EUCYS_METHOD
+            and not bool(self.lcdm_limit)
+        )
 
     def resolved_diag_steps(self) -> int:
         return self.diag_steps if self.diag_steps is not None else max(self.steps * 2, 100)
@@ -15232,8 +15304,54 @@ class RunConfig:
             f"artifacts={'off' if self.no_artifacts else 'on'}  "
             f"ppc_runs={self.ppc_runs}  "
             f"prior_ppc={'off' if self.skip_prior_predictive else 'on'}  "
-            f"lcdm_limit={self.lcdm_limit}"
+            f"lcdm_limit={self.lcdm_limit}  "
+            f"eucys_published={self.matches_eucys_published()}"
         )
+
+    def eucys_banner(self) -> str:
+        expected = self.expected_posterior_samples()
+        published = self.matches_eucys_published()
+        lines = [
+            "=" * 72,
+            "EUCYS MCMC configuration",
+            (
+                "  entropy sector: ON (published LCDM+S)"
+                if not self.lcdm_limit
+                else "  entropy sector: FROZEN (lcdm_limit=True) - NOT the published posterior"
+            ),
+            f"  method: {self.mcmc_method}",
+            (
+                f"  {self.walkers} walkers x {self.steps:,} production x "
+                f"{self.chains} chains = {expected:,} posterior samples"
+            ),
+            (
+                f"  burn-in: {self.resolved_burn():,}  "
+                f"(total steps per walker = {self.resolved_nsteps():,})"
+            ),
+            f"  ESS target: {self.ess_min:,.0f}",
+            f"  published EUCYS match: {'YES' if published else 'NO'}",
+        ]
+        if published:
+            lines.append(
+                "  This is the MCMC reported in the EUCYS paper "
+                f"({EUCYS_POSTERIOR_SAMPLES:,} posterior samples)."
+            )
+            lines.append(
+                "  Smoke / package diagnostic only: "
+                "python scripts/run_validation.py --quick"
+            )
+        else:
+            lines.append(
+                f"  published target: {EUCYS_WALKERS} walkers x "
+                f"{EUCYS_PROD_STEPS:,} production x {EUCYS_CHAINS} chains "
+                f"= {EUCYS_POSTERIOR_SAMPLES:,}; burn-in {EUCYS_BURN:,}; "
+                f"ESS {EUCYS_ESS_MIN:,.0f}; {EUCYS_METHOD}; entropy sector ON"
+            )
+            lines.append(
+                "  reproduce the paper: python scripts/run_validation.py"
+            )
+        lines.append("=" * 72)
+        return "\n".join(lines)
 
 
 def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
@@ -15253,8 +15371,10 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
         prog="Bayesian_Validationn.py",
         description=(
             "LCDM+S Bayesian validation framework. "
-            "Production mode samples the real Table-2 joint likelihood only "
-            "(no synthetic demo posteriors). All MCMC sizes are set from the CLI."
+            "Default MCMC is the published EUCYS run: 48 walkers × "
+            "50,000 production × 3 chains = 7,200,000 posterior samples, "
+            "entropy sector ON. Production mode samples the real Table-2 "
+            "joint likelihood only (no synthetic demo posteriors)."
         ),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -15265,18 +15385,22 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
     p.add_argument(
         "--steps", "--prod-steps", "--mcmc-steps", "--nsteps",
         dest="steps", type=int, default=None,
-        help="Production MCMC steps per chain / walker",
+        help="Production MCMC steps kept per walker after burn-in "
+             f"(default: {EUCYS_PROD_STEPS})",
     )
     p.add_argument(
-        "--chains", "--mcmc-chains", "--nchains", dest="chains", type=int, default=2,
-        help="Number of independent Metropolis-Hastings chains",
+        "--chains", "--mcmc-chains", "--nchains", dest="chains", type=int,
+        default=EUCYS_CHAINS,
+        help="Independent affine ensembles (or MH chains)",
     )
     p.add_argument(
-        "--burn", "--mcmc-burn", "--burn-in", dest="burn", type=int, default=None,
-        help="Burn-in steps discarded from each chain (default: steps//6)",
+        "--burn", "--mcmc-burn", "--burn-in", dest="burn", type=int,
+        default=EUCYS_BURN,
+        help="Burn-in steps discarded from each walker",
     )
     p.add_argument(
-        "--walkers", "--nwalkers", dest="walkers", type=int, default=10,
+        "--walkers", "--nwalkers", dest="walkers", type=int,
+        default=EUCYS_WALKERS,
         help="Ensemble walkers for affine / differential-evolution MCMC",
     )
     p.add_argument(
@@ -15305,7 +15429,8 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
         help="Burn-in for Phase-10 diagnostic chains (default: diag_steps//4)",
     )
     p.add_argument(
-        "--ess-min", "--min-ess", dest="ess_min", type=float, default=DIAG_ESS_MIN,
+        "--ess-min", "--min-ess", dest="ess_min", type=float,
+        default=EUCYS_ESS_MIN,
         help="Minimum effective sample size (ESS) required for convergence flag",
     )
     p.add_argument(
@@ -15318,7 +15443,7 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
     )
     p.add_argument(
         "--mcmc-method", "--method", dest="mcmc_method", type=str,
-        default="metropolis",
+        default=EUCYS_METHOD,
         choices=[m for m in MCMC_METHODS if m != "hamiltonian"],
         help="Primary MCMC method for Phase-10 / paper chains",
     )
@@ -15367,17 +15492,18 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
         help="Number of prior draws for the pre-MCMC prior predictive ensemble",
     )
     p.add_argument(
-        "--lcdm-limit", dest="lcdm_limit", action="store_true", default=True,
-        help="Freeze the entropy sector (original production path). Default: on",
+        "--lcdm-limit", dest="lcdm_limit", action="store_true", default=False,
+        help="Freeze the entropy sector (original script path). "
+             "Not the published EUCYS ΛCDM+S posterior.",
     )
     p.add_argument(
         "--entropy-sector", dest="lcdm_limit", action="store_false",
-        help="Evaluate logistic ΛCDM+S dynamics in the production posterior "
-             "(overrides the original lcdm_limit=True production default)",
+        default=False,
+        help="Evaluate logistic ΛCDM+S dynamics (published EUCYS path; default)",
     )
     ns = p.parse_args(list(argv) if argv is not None else None)
     steps = ns.steps if ns.steps is not None else (
-        ns.steps_pos if ns.steps_pos is not None else 300)
+        ns.steps_pos if ns.steps_pos is not None else EUCYS_PROD_STEPS)
     if steps < 1:
         p.error("--steps / --prod-steps must be >= 1")
     if ns.chains < 1:
@@ -15447,6 +15573,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     print(f"Bayesian_Validationn v{__version__}", flush=True)
     print("Math framework + Layer 3 Phases 0–15 (single file)", flush=True)
+    print(cfg.eucys_banner(), flush=True)
     print(f"CLI sampler config: {cfg.summary_line()}", flush=True)
     print("=" * 72, flush=True)
     print("Phase 0 — Scope and Claims Control:", flush=True)
@@ -15708,27 +15835,69 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("-" * 72, flush=True)
     print("Phase 8 MCMC (real JointLikelihood posterior):", flush=True)
     print(f"  methods: {', '.join(MCMC_METHODS)}", flush=True)
-    print(f"  using CLI sizes: steps={cfg.steps}  chains={cfg.chains}  "
-          f"burn={burn}  walkers={cfg.walkers}", flush=True)
-    _ens_burn = max(1, min(burn, max(cfg.steps - 1, 0)))
+    _total_steps = cfg.resolved_nsteps()
+    print(
+        f"  using CLI sizes: production={cfg.steps}  burn={burn}  "
+        f"total_steps={_total_steps}  chains/ensembles={cfg.chains}  "
+        f"walkers={cfg.walkers}  method={cfg.mcmc_method}  "
+        f"expected_samples={cfg.expected_posterior_samples():,}",
+        flush=True,
+    )
+    _ens_burn = burn
     _af_walkers = max(cfg.walkers, 8)  # affine needs >= 2*ndim (=8 for 4 params)
-    _mh = run_mcmc(_post_prod, nchains=cfg.chains, nsteps=cfg.steps,
-                   burn=burn, seed=cfg.seed, method="metropolis",
-                   step_frac=cfg.step_frac)
-    print(f"  metropolis:   chains={_mh.nchains()}  samples={_mh.n_samples()}  "
-          f"acc={sum(_mh.acceptance)/len(_mh.acceptance):.2f}", flush=True)
-    _af = run_mcmc(_post_prod, nchains=_af_walkers, nsteps=cfg.steps,
-                   burn=_ens_burn, seed=cfg.seed + 1, method="affine",
-                   step_frac=0.3, nwalkers=_af_walkers)
-    print(f"  affine:       walkers={_af.nwalkers}  samples={_af.n_samples()}  "
-          f"acc={_af.acceptance[0]:.2f}", flush=True)
-    _de_walkers = max(cfg.walkers, 4)
-    _de = run_mcmc(_post_prod, nchains=_de_walkers, nsteps=cfg.steps,
-                   burn=_ens_burn, seed=cfg.seed + 2,
-                   method="differential_evolution",
-                   step_frac=0.3, nwalkers=_de_walkers)
-    print(f"  diff. evol.:  walkers={_de.nwalkers}  samples={_de.n_samples()}  "
-          f"acc={_de.acceptance[0]:.2f}", flush=True)
+    _paper_kwargs: dict[str, Any] = dict(
+        nsteps=_total_steps,
+        burn=burn,
+        seed=cfg.seed,
+        method=cfg.mcmc_method,
+        step_frac=cfg.step_frac,
+    )
+    if cfg.mcmc_method in ("affine", "differential_evolution"):
+        _paper_kwargs["nwalkers"] = _af_walkers
+        _paper_kwargs["nchains"] = _af_walkers
+        _paper_kwargs["nensembles"] = max(1, int(cfg.chains))
+    else:
+        _paper_kwargs["nchains"] = cfg.chains
+    _paper = run_mcmc(_post_prod, **_paper_kwargs)
+    print(
+        f"  primary ({cfg.mcmc_method}): walkers/chains={_paper.nwalkers}  "
+        f"ensembles={_paper.meta.get('nensembles', 1)}  "
+        f"samples={_paper.n_samples():,}  "
+        f"acc={sum(_paper.acceptance)/max(len(_paper.acceptance), 1):.2f}",
+        flush=True,
+    )
+    if cfg.matches_eucys_published():
+        print(
+            f"  EUCYS target {EUCYS_POSTERIOR_SAMPLES:,} posterior samples; "
+            f"this run kept {_paper.n_samples():,}",
+            flush=True,
+        )
+    _run_extra_samplers = cfg.steps <= 1000
+    if _run_extra_samplers:
+        _mh = run_mcmc(_post_prod, nchains=cfg.chains, nsteps=_total_steps,
+                       burn=burn, seed=cfg.seed, method="metropolis",
+                       step_frac=cfg.step_frac)
+        print(f"  metropolis:   chains={_mh.nchains()}  samples={_mh.n_samples()}  "
+              f"acc={sum(_mh.acceptance)/len(_mh.acceptance):.2f}", flush=True)
+        _af = run_mcmc(_post_prod, nchains=_af_walkers, nsteps=_total_steps,
+                       burn=_ens_burn, seed=cfg.seed + 1, method="affine",
+                       step_frac=0.3, nwalkers=_af_walkers)
+        print(f"  affine:       walkers={_af.nwalkers}  samples={_af.n_samples()}  "
+              f"acc={_af.acceptance[0]:.2f}", flush=True)
+        _de_walkers = max(cfg.walkers, 4)
+        _de = run_mcmc(_post_prod, nchains=_de_walkers, nsteps=_total_steps,
+                       burn=_ens_burn, seed=cfg.seed + 2,
+                       method="differential_evolution",
+                       step_frac=0.3, nwalkers=_de_walkers)
+        print(f"  diff. evol.:  walkers={_de.nwalkers}  samples={_de.n_samples()}  "
+              f"acc={_de.acceptance[0]:.2f}", flush=True)
+    else:
+        _mh = _af = _de = _paper
+        print(
+            "  extra samplers skipped at production size; "
+            "primary method is the published-style chain",
+            flush=True,
+        )
     print("  hamiltonian:  future (NotImplementedError stub)", flush=True)
     print("-" * 72, flush=True)
     print("Phase 9 Nested Sampling (real joint likelihood):", flush=True)
@@ -15748,23 +15917,31 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("-" * 72, flush=True)
     print("Phase 10 Diagnostics (real MCMC health):", flush=True)
     print(f"  metrics: {', '.join(MCMCDiagnostics.metrics())}", flush=True)
-    print(f"  using CLI sizes: diag_steps={diag_steps}  burn={diag_burn}  "
-          f"chains={max(cfg.chains, 4)}  method={cfg.mcmc_method}  "
-          f"ess_min={cfg.ess_min}  rhat_max={cfg.rhat_max}", flush=True)
-    _mh10_kwargs: dict[str, Any] = dict(
-        nsteps=diag_steps,
-        burn=diag_burn,
-        seed=cfg.seed + 62,
-        method=cfg.mcmc_method,
-        step_frac=cfg.step_frac,
-    )
-    if cfg.mcmc_method in ("affine", "differential_evolution"):
-        _mh10_nw = max(cfg.walkers, 8)
-        _mh10_kwargs["nchains"] = _mh10_nw
-        _mh10_kwargs["nwalkers"] = _mh10_nw
+    if cfg.steps > 1000:
+        print(
+            "  diagnosing the production chain "
+            f"(n_samples={_paper.n_samples():,}; no second long MCMC)",
+            flush=True,
+        )
+        _mh10 = _paper
     else:
-        _mh10_kwargs["nchains"] = max(cfg.chains, 4)
-    _mh10 = run_mcmc(_post_prod, **_mh10_kwargs)
+        print(f"  using CLI sizes: diag_steps={diag_steps}  burn={diag_burn}  "
+              f"chains={max(cfg.chains, 4)}  method={cfg.mcmc_method}  "
+              f"ess_min={cfg.ess_min}  rhat_max={cfg.rhat_max}", flush=True)
+        _mh10_kwargs: dict[str, Any] = dict(
+            nsteps=diag_steps,
+            burn=diag_burn,
+            seed=cfg.seed + 62,
+            method=cfg.mcmc_method,
+            step_frac=cfg.step_frac,
+        )
+        if cfg.mcmc_method in ("affine", "differential_evolution"):
+            _mh10_nw = max(cfg.walkers, 8)
+            _mh10_kwargs["nchains"] = _mh10_nw
+            _mh10_kwargs["nwalkers"] = _mh10_nw
+        else:
+            _mh10_kwargs["nchains"] = max(cfg.chains, 4)
+        _mh10 = run_mcmc(_post_prod, **_mh10_kwargs)
     _diag10 = diagnose_mcmc(
         _mh10, ess_min=cfg.ess_min, rhat_ok=cfg.rhat_max)
     print(f"  converged={_diag10.converged}  healthy={_diag10.healthy}  "
@@ -15780,10 +15957,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     print("Phase 11 Statistical Tests (real joint likelihood):", flush=True)
     print(f"  metrics: {', '.join(STATS_METRICS)}", flush=True)
     _truth11 = list(_reg_prod.fiducial_vector().values)
-    _s11 = max(40, cfg.steps // 3)
-    _b11 = max(5, _s11 // 6)
-    _mcmc11 = run_mcmc(_post_prod, nchains=cfg.chains, nsteps=_s11, burn=_b11,
-                       seed=cfg.seed + 84, step_frac=0.35)
+    if cfg.steps > 1000:
+        _mcmc11 = _paper
+    else:
+        _s11 = max(40, cfg.steps // 3)
+        _b11 = max(5, _s11 // 6)
+        _mcmc11 = run_mcmc(_post_prod, nchains=cfg.chains, nsteps=_s11, burn=_b11,
+                           seed=cfg.seed + 84, step_frac=0.35)
     _stats11 = compute_statistics(
         _j_prod, _truth11, n_params=4, mcmc=_mcmc11, nested=_ns,
         n_waic_draws=min(40, max(10, cfg.steps // 10)), kfold=3,
@@ -15811,11 +15991,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     _mu12 = _reg_prod.fiducial_vector().values
     _sig12 = [p.prior.sigma if isinstance(p.prior, GaussianPrior) else 0.1
               for p in _reg_prod.sampled()]
-    _s12 = max(cfg.steps, 100)
-    _b12 = max(1, _s12 // 5)
-    _mcmc12 = run_mcmc(_post_prod, nchains=max(cfg.chains, 3), nsteps=_s12,
-                       burn=_b12, seed=cfg.seed + 102,
-                       method="metropolis", step_frac=cfg.step_frac)
+    if cfg.steps > 1000:
+        _mcmc12 = _paper
+    else:
+        _s12 = max(cfg.steps, 100)
+        _b12 = max(1, _s12 // 5)
+        _mcmc12 = run_mcmc(_post_prod, nchains=max(cfg.chains, 3), nsteps=_s12,
+                           burn=_b12, seed=cfg.seed + 102,
+                           method="metropolis", step_frac=cfg.step_frac)
     _ref12 = {n: (_mu12[i], _sig12[i]) for i, n in enumerate(_reg_prod.names())}
     _post12 = analyze_posterior(_mcmc12, _reg_prod, reference=_ref12)
     print(f"  n_samples={_post12.n_samples}  "

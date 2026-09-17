@@ -130,10 +130,28 @@ Production joint likelihood (no SN files required):
 Pantheon+ / DES-SN Y5 are loaded **only** from `--data-dir` CSVs.
 Scaffolded SPARC/WMAP catalogs are refused (`ALLOW_SCAFFOLD_DATASETS=False`).
 
-**Important (original behaviour):** `build_production_posterior` default
-is `lcdm_limit=True`, i.e. the entropy sector is frozen during
-production sampling. Pass `--entropy-sector` to evaluate logistic
-ΛCDM+S while sampling. See `SCIENTIFIC_AUDIT.md`.
+**Published EUCYS posterior (the packaged default):**
+
+```text
+python scripts/run_validation.py
+```
+
+This is the written-report MCMC:
+
+- 48 walkers × 50,000 production × 3 affine ensembles = **7,200,000** posterior samples
+- burn-in 2,000 (52,000 total steps per walker)
+- ESS target 75,000
+- entropy sector **ON** (`lcdm_limit=false`)
+
+Do **not** treat `--quick` or `configs/diagnostic.yaml` as that posterior.
+
+Package diagnostic only (short chains, **not** the paper):
+
+```text
+python scripts/run_validation.py --quick
+```
+
+The original script snapshot still freezes χ(t) unless asked (`original/Bayesian_Validationn.py`). The packaged CLI default is the published entropy-sector path. Pass `--lcdm-limit` only if you want that frozen-sector original-script behaviour.
 
 Distinguish always:
 
@@ -145,8 +163,10 @@ Distinguish always:
 | \(\ln Z\) | Bayesian evidence (nested sampling only) |
 | Bayes factor | \(Z_i/Z_j\), not \(\Delta\chi^2\) |
 
-Default CLI chains (`steps=300`) are **diagnostic**, not a quoted
-posterior.
+Default CLI chains are the **published EUCYS posterior** (48 walkers,
+50,000 production, 2,000 burn-in, 3 ensembles, ESS 75,000, 7.2 M
+samples). `python scripts/run_validation.py --quick` is a package
+diagnostic and is **not** a quoted posterior.
 
 ## 8. Results
 
@@ -213,7 +233,8 @@ Full instructions, dataset paths, seeds, and MCMC sizes:
 
 ```text
 python scripts/run_solver.py
-python scripts/run_validation.py --entropy-sector --output results
+python scripts/run_validation.py
+python scripts/run_validation.py --quick
 ```
 
 ## 13. Example Usage
@@ -258,9 +279,9 @@ perturbations; fixed \(r_d=147.09\) Mpc nuisance in BAO ratios.
 files; builtins for DESI/BOSS/Planck/SH0ES are **compressed** summaries,
 not the raw catalogs; some BAO rows are treated as diagonal in \(\sigma\).
 
-**Statistical limitations.** Default MCMC is short; AIC/BIC are not
-evidence; production default `lcdm_limit=True` freezes \(\chi(t)\)
-unless `--entropy-sector` is set; nested-sampling live points default
+**Statistical limitations.** `--quick` MCMC is short; AIC/BIC are not
+evidence; `--lcdm-limit` freezes \(\chi(t)\) and is **not** the published
+EUCYS posterior; nested-sampling live points default
 to 25. At the code fiducial, a smoke evaluation of the 30-element
 production joint returned a very large \(\chi^2\) (see
 `SCIENTIFIC_AUDIT.md`); do not treat that number as a validated fit.

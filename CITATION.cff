@@ -17,6 +17,6 @@ keywords:
   - Bayesian inference
   - scientific software
 license: MIT
-version: "2.0.0"
+version: "2.1.0"
 date-released: "2026-09-07"
 repository-code: "https://github.com/USER/LambdaCDM-plus-S"

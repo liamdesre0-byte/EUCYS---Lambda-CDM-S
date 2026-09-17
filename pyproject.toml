@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lcdm-plus-s"
-version = "2.0.0"
+version = "2.1.0"
 description = "ΛCDM+S entropy-extended cosmology: thermodynamic derivation and Bayesian validation"
 readme = "README.md"
 license = { file = "LICENSE" }

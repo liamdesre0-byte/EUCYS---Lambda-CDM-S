@@ -1,7 +1,19 @@
-# ΛCDM+S default configuration
-# Values are those already present in Bayesian_Validationn.py /
-# analytical_solver.py. Comments record meaning and units.
-# This file does not invent extra cosmological parameters.
+# ΛCDM+S default configuration — published EUCYS posterior
+#
+# A juror who runs the repository default is requesting THIS MCMC, not a
+# short package smoke test:
+#
+#   48 walkers × 50,000 production × 3 affine ensembles
+#     = 7,200,000 posterior samples
+#   burn-in 2,000  (total steps per walker = 52,000)
+#   ESS target 75,000
+#   entropy sector ON  (lcdm_limit: false)
+#
+# Fiducials and Table 1 priors are those already present in
+# Bayesian_Validationn.py / analytical_solver.py.
+#
+# Package diagnostic (NOT the paper): configs/diagnostic.yaml
+#   python scripts/run_validation.py --quick
 
 # ---------------------------------------------------------------------------
 # Four-parameter inference θ  (bayesian_validation.BackgroundParams)
@@ -41,24 +53,25 @@ analytical_solver:
   atol: 1.0e-10
   temperature_mode: dynamical_horizon   # or de_sitter
 
-# Production Bayesian validation (original CLI defaults)
+# Published EUCYS MCMC (written report)
+# 48 × 50,000 × 3 = 7,200,000 posterior samples after discarding burn-in.
 mcmc:
   seed: 8
-  steps: 300               # production steps per chain / walker
-  chains: 2
-  burn: null               # null → steps//6
-  walkers: 10
-  method: metropolis       # metropolis | affine | differential_evolution
+  steps: 50000             # production steps kept per walker after burn-in
+  chains: 3                # independent affine ensembles
+  burn: 2000               # discarded steps per walker (total = 52,000)
+  walkers: 48
+  method: affine           # metropolis | affine | differential_evolution
   step_frac: 0.4           # Metropolis width as a fraction of prior σ
   nlive: 25
   ns_iter: 100
   theory_nsteps: 400       # background RK steps inside ModifiedCLASS
-  ess_min: 50.0
+  ess_min: 75000.0         # published ESS target
   rhat_max: 1.1
   thin: 1
-  # Original production path freezes the entropy sector (lcdm_limit: true).
-  # Set false, or pass --entropy-sector, to sample logistic ΛCDM+S dynamics.
-  lcdm_limit: true
+  # Published ΛCDM+S samples the logistic entropy sector.
+  # lcdm_limit: true freezes χ(t) and does NOT reproduce the paper.
+  lcdm_limit: false
   skip_cmb: false
   skip_prior_predictive: false
   ppc_runs: 200

@@ -71,7 +71,8 @@ See `data/README.md`.
 
 | Path | Role |
 | --- | --- |
-| `configs/default.yaml` | fiducials, priors, MCMC sizes |
+| `configs/default.yaml` | published EUCYS MCMC (48 × 50,000 × 3 = 7.2 M) |
+| `configs/diagnostic.yaml` | short non-paper smoke test |
 | `src/lcdm_plus_s/` | installable package |
 | `original/` | unmodified input scripts |
 | `results/` | Bayesian artifacts (created at run time) |
@@ -122,36 +123,58 @@ lcdms-solver --validation-quick --export-dir theory_export
 
 ## 8. Running Bayesian validation
 
-**Warning.** The original production path builds `ModifiedCLASS(..., lcdm_limit=True)`,
-which freezes the entropy sector to constant \(\Omega_\Lambda\). That
-default is preserved. To actually evaluate logistic ΛCDM+S while sampling:
+**Published EUCYS posterior (default).** This is the written-report MCMC.
+A juror running the repository default is requesting these numbers, not
+a 300-step smoke test:
 
-```text
-python scripts/run_validation.py --entropy-sector --output results
-```
-
-Original (frozen-sector) production default:
+| Setting | Published value |
+| --- | --- |
+| method | `affine` |
+| walkers | 48 |
+| production steps | 50,000 (kept after burn-in) |
+| burn-in | 2,000 (total steps per walker = 52,000) |
+| independent ensembles | 3 |
+| posterior samples | 48 × 50,000 × 3 = **7,200,000** |
+| ESS target | 75,000 |
+| entropy sector | ON (`lcdm_limit: false`) |
 
 ```text
 python scripts/run_validation.py --output results
 ```
 
-Smoke run (small MCMC, skip the end-of-run unit suite and prior PPC):
+Equivalent explicit flags (same as `configs/default.yaml`):
 
 ```text
-python scripts/run_validation.py --quick --no-artifacts --no-progress --output results
+python scripts/run_validation.py --entropy-sector --mcmc-method affine --walkers 48 --prod-steps 50000 --burn 2000 --chains 3 --ess-min 75000 --output results
+```
+
+`--steps` / `--prod-steps` are **production samples kept after burn-in**,
+so 50,000 production + 2,000 burn-in = 52,000 steps per walker.
+
+**Package diagnostic only — not the paper.** Short chains for install
+checks. Do not quote this as the EUCYS posterior:
+
+```text
+python scripts/run_validation.py --quick --output results
+python scripts/run_validation.py --config configs/diagnostic.yaml --output results
+```
+
+**Frozen entropy sector (original script path, not the paper):**
+
+```text
+python scripts/run_validation.py --lcdm-limit --output results
 ```
 
 With supernova CSVs:
 
 ```text
-python scripts/run_validation.py --data-dir data --require-sn --entropy-sector
+python scripts/run_validation.py --data-dir data --require-sn
 ```
 
-Direct module invocation (same flags as the original script):
+Direct module invocation (same published defaults):
 
 ```text
-python -m lcdm_plus_s.bayesian_validation --steps 300 --seed 8 --outdir results
+python -m lcdm_plus_s.bayesian_validation --outdir results
 ```
 
 ## 9. Running tests
@@ -195,22 +218,36 @@ integrators are deterministic given θ.
 
 ## 13. MCMC configuration
 
-Defaults from the original `RunConfig` (also in `configs/default.yaml`):
+Published EUCYS values (also in `configs/default.yaml`):
 
-| Setting | Default |
+| Setting | Published EUCYS |
+| --- | --- |
+| method | `affine` |
+| production steps | 50,000 |
+| chains / ensembles | 3 |
+| burn | 2,000 |
+| walkers | 48 |
+| posterior samples | 7,200,000 |
+| nlive / ns_iter | 25 / 100 |
+| ess_min / rhat_max | 75,000 / 1.1 |
+| theory_nsteps | 400 |
+| lcdm_limit | false |
+
+Package diagnostic (`configs/diagnostic.yaml` / `--quick`):
+
+| Setting | Diagnostic |
 | --- | --- |
 | method | `metropolis` |
-| steps | 300 |
+| steps | 300 (40 under `--quick`) |
 | chains | 2 |
-| burn | `steps//6` |
+| burn | 50 |
 | walkers | 10 |
-| nlive / ns_iter | 25 / 100 |
-| ess_min / rhat_max | 50 / 1.1 |
-| theory_nsteps | 400 |
+| ess_min | 50 |
+| lcdm_limit | false |
 
-These defaults are **short diagnostic chains**, not a 50,000-step
-publication run. Increase `--steps`, `--chains`, and `--diag-steps`
-explicitly for inference you intend to quote.
+`--quick` is **not** a 50,000-step publication run. The original
+unmodified script in `original/Bayesian_Validationn.py` still defaults
+to frozen-sector `lcdm_limit=True`; the packaged CLI does not.
 
 ## 14. Numerical tolerances
 

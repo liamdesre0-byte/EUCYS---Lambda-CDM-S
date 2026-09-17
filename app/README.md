@@ -16,4 +16,7 @@ and \(\mu(z)\) for ΛCDM+S versus the `lcdm_limit=True` ΛCDM limit.
 
 What this app does **not** do: it does not run production MCMC, does not
 load Pantheon+/DES catalogs, and does not display fabricated posterior
-intervals. For inference see `python scripts/run_validation.py`.
+intervals. For the published EUCYS posterior see
+`python scripts/run_validation.py` (48 walkers × 50,000 production × 3
+chains = 7.2 M samples). For a package smoke test use
+`python scripts/run_validation.py --quick`.

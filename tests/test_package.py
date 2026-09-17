@@ -9,7 +9,7 @@ from lcdm_plus_s import BackgroundParams, solve_background
 
 
 def test_package_version():
-    assert lcdm_plus_s.__version__ == "2.0.0"
+    assert lcdm_plus_s.__version__ == "2.1.0"
 
 
 def test_public_solve_background_is_bayesian_implementation():

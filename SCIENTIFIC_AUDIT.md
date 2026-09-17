@@ -54,8 +54,8 @@ Comparison of the original research scripts with the packaged
 | Item | Original | Packaged | Why |
 | --- | --- | --- | --- |
 | Module path | loose scripts in Downloads | `lcdm_plus_s.*` | installable package |
-| `build_production_posterior(..., lcdm_limit=)` | hard-coded `True` | argument, **default still `True`** | make the freeze explicit; preserve numerics |
-| CLI | `--ppc-runs` etc. | plus `--entropy-sector` / `--lcdm-limit` | opt in to logistic sampling |
+| `build_production_posterior(..., lcdm_limit=)` | hard-coded `True` | argument, **function default still `True`**; packaged CLI/YAML default is `False` (2.1.0) | original script freeze preserved as an API; published EUCYS path is explicit |
+| CLI MCMC sizes | 300 steps / 2 chains / 10 walkers / Metropolis / `lcdm_limit=True` | 48 walkers / 50,000 production / 2,000 burn-in / 3 affine ensembles / ESS 75,000 / entropy sector ON (2.1.0) | match the written-report posterior; `--quick` keeps the diagnostic path |
 | Docstring headers | single-file mandate | note that the file is still the implementation | packaging without splitting science |
 
 No fiducials, priors, compressed data vectors, or likelihood algebra
@@ -65,12 +65,17 @@ were edited.
 
 None of the cosmological ODEs were rewritten.
 
-**Documented original behaviour (not silently “fixed”):** production
-`ModifiedCLASS` used `lcdm_limit=True`, so \(k\) and \(t_{\mathrm{crit}}\)
-do not affect the sampled background unless `--entropy-sector` is
-passed. Treating that as the published ΛCDM+S posterior would be
-incorrect. The default is preserved so a byte-for-byte behavioural
-comparison with the original script remains possible.
+**Documented original behaviour (not silently “fixed” in the snapshot):**
+`original/Bayesian_Validationn.py` still builds production
+`ModifiedCLASS` with `lcdm_limit=True`, so \(k\) and \(t_{\mathrm{crit}}\)
+do not affect that script's sampled background. Treating *that* path as
+the published ΛCDM+S posterior would be incorrect.
+
+From **2.1.0** the packaged CLI / `configs/default.yaml` default is the
+published EUCYS chain: entropy sector ON, 48 walkers × 50,000
+production × 3 ensembles = 7,200,000 samples, burn-in 2,000, ESS
+75,000. Pass `--lcdm-limit` to recover the frozen-sector original-script
+behaviour. `--quick` is the short diagnostic and is not the paper.
 
 ## Numerical differences to expect
 
