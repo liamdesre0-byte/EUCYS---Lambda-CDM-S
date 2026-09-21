@@ -128,7 +128,8 @@ def main() -> None:
         f"training AIC & {tr['AIC_LCDM']:.1f} & {tr['AIC_LCDMS']:.1f} \\\\\n"
         f"training BIC & {tr['BIC_LCDM']:.1f} & {tr['BIC_LCDMS']:.1f} \\\\\n"
         f"held-out DES $\\chi^2$ & {ho['chi2_LCDM']:.1f} & "
-        f"{ho['chi2_LCDMS']:.1f} \\\\\n\\bottomrule\n\\end{tabular}\n")
+        f"{ho['chi2_LCDMS']:.1f} \\\\\n"
+        "\\bottomrule\n\\end{tabular}\n")
     (out_tab / "model_comparison.tex").write_text(latex, encoding="utf-8")
 
     # --- figure: DES Hubble diagram + residuals ---------------------------
@@ -157,8 +158,7 @@ def main() -> None:
     a1.set_title(
         f"Held-out DES-SN Y5: "
         f"$\\chi^2_{{\\Lambda CDM+S}}$={des_chi2_s:.1f}, "
-        f"$\\chi^2_{{\\Lambda CDM}}$={des_chi2_l:.1f} "
-        f"({comparison['label'].split(chr(8212))[0].strip() or 'chain'})")
+        f"$\\chi^2_{{\\Lambda CDM}}$={des_chi2_l:.1f} (preliminary chain)")
     a2.axhline(0, color="k", lw=1)
     a2.plot(z[zs], (mu - pred_l)[zs], ".", ms=2.5, alpha=0.3, color="C1")
     a2.plot(z[zs], (pred_s - pred_l)[zs], lw=1.8, color="C0", ls="--",

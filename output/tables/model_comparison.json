@@ -1,0 +1,40 @@
+{
+  "training": {
+    "datasets": [
+      "desi_dr2",
+      "boss_dr12",
+      "planck",
+      "shoes",
+      "pantheon_plus"
+    ],
+    "n_data": 1495,
+    "logL_LCDMS_at_posterior_median": 439.86258903610656,
+    "logL_LCDM_at_bestfit": 335.71988043680676,
+    "AIC_LCDMS": -871.7251780722131,
+    "AIC_LCDM": -667.4397608736135,
+    "BIC_LCDMS": -850.485652128914,
+    "BIC_LCDM": -656.8199979019639,
+    "note": "AIC/BIC computed on the SAME training joint for both models; LCDM+S value uses the posterior median, not the MAP, so its AIC/BIC is slightly conservative."
+  },
+  "holdout_des_sn5": {
+    "n_unique_sn": 1820,
+    "n_des": 1623,
+    "n_lowz": 197,
+    "chi2_LCDMS": 7579.8791561926255,
+    "chi2_LCDM": 7429.700459912956,
+    "delta_chi2_holdout": 150.17869627966957,
+    "delta_lnL_holdout": -75.08934813983433,
+    "note": "held-out statistics; NEVER subtract these from training/joint evidence numbers"
+  },
+  "theta_LCDMS_median": {
+    "H0": 74.16551216060088,
+    "Omega_Lambda": 0.7335406632675673,
+    "k": 0.17557856905511476,
+    "t_crit": 8.7935662630873
+  },
+  "theta_LCDM_bestfit": {
+    "H0": 71.64110846206549,
+    "Omega_Lambda": 0.7364138546206385
+  },
+  "label": "PRELIMINARY chain (1 run) - regenerate at full production size before quoting"
+}

@@ -1,0 +1,78 @@
+{
+  "parameters": {
+    "H0": {
+      "median": 74.16551216060088,
+      "p16": 73.5319473298079,
+      "p84": 74.59690621149224,
+      "p2.5": 73.21806283684198,
+      "p97.5": 75.05940476892982,
+      "prior_mean": 73.0,
+      "prior_sigma": 2.0,
+      "posterior_over_prior_width": 0.26623972042108335,
+      "shift_from_prior_sigma": 0.5827560803004417
+    },
+    "Omega_Lambda": {
+      "median": 0.7335406632675673,
+      "p16": 0.7250202318931727,
+      "p84": 0.7379483486380602,
+      "p2.5": 0.7214345921499619,
+      "p97.5": 0.7407451940624756,
+      "prior_mean": 0.688,
+      "prior_sigma": 0.012,
+      "posterior_over_prior_width": 0.5386715310369827,
+      "shift_from_prior_sigma": 3.795055272297278
+    },
+    "k": {
+      "median": 0.17557856905511476,
+      "p16": 0.11522969061844207,
+      "p84": 0.5310077988389957,
+      "p2.5": 0.1007770562342061,
+      "p97.5": 0.6079438692255476,
+      "prior_mean": 0.372,
+      "prior_sigma": 0.07,
+      "posterior_over_prior_width": 2.9698436301468116,
+      "shift_from_prior_sigma": -2.806020442069789
+    },
+    "t_crit": {
+      "median": 8.7935662630873,
+      "p16": 6.466388810486514,
+      "p84": 13.545996842102664,
+      "p2.5": 6.188092491195758,
+      "p97.5": 16.29075889927089,
+      "prior_mean": 15.827,
+      "prior_sigma": 1.5,
+      "posterior_over_prior_width": 2.35986934387205,
+      "shift_from_prior_sigma": -4.688955824608467
+    }
+  },
+  "rhat_across_runs": {},
+  "n_samples_total": 8400,
+  "config": {
+    "walkers": 48,
+    "steps": 250,
+    "burn": 75,
+    "runs": 1,
+    "seed": 20260920,
+    "data_dir": "data",
+    "skip_cmb": false
+  },
+  "joint_components": [
+    "desi_dr2",
+    "boss_dr12",
+    "planck",
+    "shoes",
+    "pantheon_plus"
+  ],
+  "holdout": [
+    "des_sny5"
+  ],
+  "label": "PRELIMINARY chain (1 run) - regenerate at full production size before quoting",
+  "correlations": {
+    "H0__Omega_Lambda": 0.81453080256269,
+    "H0__k": -0.795317238692403,
+    "H0__t_crit": 0.7177565287512763,
+    "Omega_Lambda__k": -0.8874654447805408,
+    "Omega_Lambda__t_crit": 0.7488762524990635,
+    "k__t_crit": -0.8323302089910392
+  }
+}
