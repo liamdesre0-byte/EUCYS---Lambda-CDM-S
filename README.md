@@ -1,307 +1,140 @@
-# 🌌 ΛCDM+S — Entropy-Extended Cosmology
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Tests](https://img.shields.io/badge/tests-pytest-green.svg)](tests/)
+<!-- Zenodo DOI badge: mint a DOI by archiving a release at zenodo.org, then
+     replace this comment with the badge Zenodo gives you. Do not use a
+     placeholder DOI. -->
 
-**Can cosmic acceleration emerge from horizon thermodynamics?**
+# ΛCDM+S: Horizon Thermodynamics in Cosmological MCMC
 
-[📄 Paper](paper/README.md)
-· [🧮 Mathematics](mathematics/README.md)
-· [💻 Source Code](src/lcdm_plus_s/)
-· [🧪 Validation](REPRODUCING.md)
-· [🚀 Interactive App](app/README.md)
+This repository contains the Bayesian MCMC pipeline and numerical background
+solvers for **ΛCDM+S**, a thermodynamically motivated extension of standard
+cosmology in which the late-time accelerated expansion is modelled as the
+universe evolving toward a maximum-entropy de Sitter state of the Hubble
+horizon. The entropy sector enters through a logistic transition
+χ(t) = 1/(1+e^{−k(t−t_crit)}) with two extra parameters (k, t_crit) beyond
+(H₀, Ω_{Λ+S}).
 
-Research software for **ΛCDM+S** (entropy-extended cosmology): a
-Layer-1 thermodynamic derivation and a Layer-3 Bayesian validation
-pipeline. The science is the content of two existing programs,
+![DES-SN Y5 held-out validation](output/figures/des_sn5_ppc.png)
 
-1. `analytical_solver.py` — first-principles / symbolic + coupled ODEs
-2. `Bayesian_Validationn.py` — four-parameter background + inference
+## Integrity statement (read this first)
 
-packaged without rewriting the cosmological model.
+This pipeline was **corrected in September 2026** after an audit found that
+the previously published results came from code in which the entropy sector
+was frozen (`lcdm_limit=True`), making the k and t_crit "posteriors" exact
+copies of their priors, and in which the compressed-CMB likelihood used the
+drag-epoch sound horizon at the wrong epoch. **Numbers in older reports,
+posters, and papers derived from that code are superseded by the artifacts
+in `output/`, which are regenerated from the corrected pipeline.** Key
+changes, all verifiable in the git history:
 
-This repository is a **hub** (paper, math, code, tests, app). A poster
-QR code should point here, not only at a Streamlit demo.
+1. The sampled (k, t_crit) now genuinely propagate to H(z) and all
+   observables; a hard guard aborts any run where they do not.
+2. ℓ_A uses the parameter-dependent r_s(z\*) (Hu–Sugiyama z\*, sound-horizon
+   integral); BAO r_d uses the EH98 drag epoch. A regression gate requires
+   the reference Planck ΛCDM to match the compressed means (0.03% / 0.16%
+   on R / ℓ_A) before any inference.
+3. DES-SN Y5 is genuinely held out: it is carried as
+   `joint.holdout_likelihoods`, never in the training joint (hard
+   assertion).
+4. The prior-predictive metric is horizon **area**, matching the printed
+   formula: mean fRMSE **33.1% ± 0.25% (SEM)**, best realization **82.6%**
+   similarity over 500 prior draws. (Older "14.9% / 93.4%" figures were
+   computed on horizon radius and must not be quoted against the area
+   metric.)
+5. Prior provenance is disclosed in code: the Planck algebraic anchoring
+   yields H₀ ≈ 67.8, which does **not** reproduce the declared prior centre
+   of 73.0. The declared priors are a methodological choice, recorded as
+   such (`derivation_reproduces_declared=False`).
+6. DES-SN Y5 counts, verified from the data file: **1820 unique SNe
+   (1623 DES + 197 external low-z anchors)** — not 1635, and not repeat
+   measurements.
 
----
+## Model
 
-# ΛCDM+S: Entropy-Extended Cosmology
+Sampled parameters θ = (H₀, Ω_{Λ+S}, k, t_crit) with declared Gaussian
+priors:
 
-## 1. Overview
+| Parameter | Prior | Origin |
+| :--- | :---: | :--- |
+| H₀ | 73.000 ± 2.000 km/s/Mpc | declared (see integrity note 5) |
+| Ω_{Λ+S} | 0.688 ± 0.012 | declared, flatness-consistent |
+| k | 0.372 ± 0.070 Gyr⁻¹ | logistic ODE timescale k = 1/τ |
+| t_crit | 15.827 ± 1.500 Gyr | branch-residual crossover epoch |
 
-ΛCDM+S extends a flat FLRW background with an **entropy sector**
-\(\Omega_S(z)\) motivated by Hubble-horizon thermodynamics. Late-time
-acceleration is associated with a de Sitter attractor of that sector,
-not with a separately inserted vacuum energy as the *definition* of the
-model. Observationally, the code still *compares* predictions to the
-same distance and compressed-CMB probes used in standard analyses.
+Background: E² = Ω_r a⁻⁴ + Ω_m a⁻³ + Ω_{Λ+S}·χ(t)/χ₀, integrated by RK4 in
+ln a with the entropy sector live.
 
-The software has two layers that must not be conflated:
+## Key results (preliminary chain — see label in the JSON artifacts)
 
-| Layer | Module | Role |
-| --- | --- | --- |
-| 1 | `lcdm_plus_s.analytical_solver` | Tagged derivation \(S_H\to\) attractor \(\to\Lambda_S\); coupled \((\rho_r,\rho_m,\rho_S,\chi)\) ODEs |
-| 3 | `lcdm_plus_s.bayesian_validation` | \(\theta=(H_0,\Omega_\Lambda,k,t_{\mathrm{crit}})\), logistic Friedmann solver, Gaussian likelihoods, MCMC / nested sampling |
+The shipped chain is **preliminary-sized** (48 walkers × 250 steps × 2
+independent runs on the real data). The full written-report size
+(48 × 50,000 × 3) runs with the same one command below and overwrites these
+artifacts. All values in `output/tables/*.json` are generated by the
+scripts, never hand-entered.
 
-Facade modules under `src/lcdm_plus_s/` re-export those implementations.
-They do not contain a second copy of the Friedmann equation.
+<!--KEY_RESULTS_TABLE-->
 
-## 2. Research Question
+Training joint: Pantheon+ (1465 SNe after calibrator cuts) + DESI DR2 +
+BOSS DR12 + SH0ES + Planck compressed CMB. Held out: DES-SN Y5 (1820 SNe).
+Training AIC/BIC and held-out DES statistics are reported **separately**
+and are never subtracted across datasets.
 
-Can a thermodynamically motivated modification of cosmological
-dynamics, based on cosmic horizon entropy growth, **reproduce the
-observed expansion history** without treating dark energy as a
-fundamental cosmological-constant fluid?
+## 🚀 Quickstart & Reproducibility
 
-The code answers **computational** parts of that question (solve \(H(t)\),
-fit compressed likelihoods, report \(\chi^2\), AIC/BIC, optional
-\(\ln Z\)). It does **not**, by itself, prove that dark energy is
-unnecessary.
+```bash
+# 1. Clone repository & set up environment
+git clone https://github.com/liamdesre0-byte/EUCYS---Lambda-CDM-S.git
+cd EUCYS---Lambda-CDM-S
+conda env create -f environment.yml
+conda activate lcdm-plus-s
 
-## 3. Scientific Motivation
+# 2. Run numerical tests (incl. CMB regression + entropy-sector guard)
+pytest tests/
 
-Horizon thermodynamics (Bekenstein–Hawking entropy on the Hubble
-sphere, generalized second law) suggests that expansion is constrained
-by \(\dot S_H\ge 0\). With a **finite** maximum entropy \(S_{\max}\) and
-an assumed completion \(\chi\), the Layer-1 solver obtains a stable de
-Sitter end point and an asymptotic \(\Lambda_S=3\pi/(G S_{\max})\).
-
-The inference layer uses a **logistic** \(\chi(t)\) as the
-phenomenological closure of that picture (`k ≡ γ`). The analytical
-solver states explicitly that \(F(\Pi)\) and logistic \(w(t)\) are
-**not** the first-principles engine.
-
-## 4. Model
-
-Sampled parameters (Phase 2) — **only these four**:
-
-\[
-\theta = (H_0,\;\Omega_\Lambda,\;k,\;t_{\mathrm{crit}}),
-\qquad \Omega_\Lambda\equiv\Omega_{S,0}.
-\]
-
-Fixed: \(\omega_{r0}=9\times 10^{-5}\), \(S_{\max}=1\),
-\(S_{\mathrm{early}}=10^{-3}\). Derived:
-\(\Omega_{m0}=1-\Omega_\Lambda-\omega_{r0}\),
-\(\chi_0=\chi(t_0;k,t_{\mathrm{crit}})\).
-
-ΛCDM is recovered when `lcdm_limit=True` or \(k\to 0\) (constant entropy
-density, \(w_S=-1\)).
-
-## 5. Mathematical Framework
-
-See [mathematics/mathematical_framework.md](mathematics/mathematical_framework.md)
-for equation-by-equation mapping onto source functions. The inference
-background is
-
-\[
-\dot\chi=k\chi(1-\chi),\quad
-\chi(t)=\frac{1}{1+e^{-k(t-t_{\mathrm{crit}})}},
-\]
-
-\[
-E^2=\Omega_r a^{-4}+\Omega_m a^{-3}+\Omega_\Lambda\frac{\chi(t)}{\chi_0},
-\quad
-w_S=-1+\frac{\Delta S\,k\,\chi(1-\chi)}{3 H S_H}.
-\]
-
-Fiducial \(t_{\mathrm{crit}}\approx 15.8\,\mathrm{Gyr}\) is the
-\(\chi=1/2\) midpoint (often **after** today). That is the behaviour of
-the code, not a documentation error.
-
-## 6. Computational Method
-
-- **Bayesian background:** RK4 in \(\ln a\), iterative age so \(H(0)=H_0\).
-- **Analytical background:** `scipy.integrate.solve_ivp` (RK45) in
-  \(N=\ln a\), plus an independent cosmic-time RK4.
-- **Theory interface:** `ModifiedCLASS` stacks background → sample-\(k\)
-  perturbations → compressed CMB \((R,\ell_A,\omega_b)\) → BBKS \(P(k)\)
-  → distances → growth. This is **not** a Boltzmann code.
-- **Samplers:** Metropolis–Hastings (default), affine ensemble,
-  differential evolution; builtin nested sampling; optional dynesty /
-  UltraNest / PolyChord / Cobaya as backends only.
-
-## 7. Bayesian Validation
-
-Production joint likelihood (no SN files required):
-
-- DESI DR2 compressed BAO
-- BOSS DR12 BAO/RSD
-- Planck compressed distance priors (full 3×3 covariance)
-- SH0ES compressed \(H_0=73.04\pm 1.04\)
-
-Pantheon+ / DES-SN Y5 are loaded **only** from `--data-dir` CSVs.
-Scaffolded SPARC/WMAP catalogs are refused (`ALLOW_SCAFFOLD_DATASETS=False`).
-
-**Published EUCYS posterior (the packaged default):**
-
-```text
-python scripts/run_validation.py
+# 3. Reproduce everything, in causal order (no arrow points backwards):
+python scripts/01_run_prior_checks.py                  # priors + prior-predictive (no data)
+python scripts/02_run_mcmc.py --walkers 48 --steps 250 --burn 75 --runs 2   # preliminary
+# python scripts/02_run_mcmc.py --walkers 48 --steps 50000 --burn 2000 --runs 3  # full production
+python scripts/03_ppc_des_sn5.py                       # held-out DES comparison
+python scripts/04_plot_corner.py                       # corner plot + LaTeX tables from the chain
 ```
 
-This is the written-report MCMC:
+The sampler is the package's **affine-invariant ensemble** (Goodman–Weare
+stretch move) with Metropolis–Hastings and differential-evolution variants
+and an optional [Cobaya](https://cobaya.readthedocs.io) wrapper
+(`CobayaRunner`); the shipped results use the built-in affine sampler.
+R̂ is computed **across independent runs** with independent seeds.
 
-- 48 walkers × 50,000 production × 3 affine ensembles = **7,200,000** posterior samples
-- burn-in 2,000 (52,000 total steps per walker)
-- ESS target 75,000
-- entropy sector **ON** (`lcdm_limit=false`)
+## Repository layout
 
-Do **not** treat `--quick` or `configs/diagnostic.yaml` as that posterior.
-
-Package diagnostic only (short chains, **not** the paper):
-
-```text
-python scripts/run_validation.py --quick
+```
+data/               Pantheon+ / DES-SN Y5 / SH0ES vectors (public survey data)
+src/lcdm_plus_s/    core package: background solver, likelihoods, samplers
+scripts/01..04      causal reproduction chain (priors → MCMC → holdout → plots)
+configs/            run configurations (default = production, diagnostic = smoke)
+tests/              pytest suite (solver limits, likelihoods, config guards)
+notebooks/          interactive demos (horizon area, H0 sensitivity)
+output/figures      generated plots        (regenerated by scripts)
+output/tables       generated JSON/LaTeX   (regenerated by scripts)
+output/chains       MCMC chains + prior ensembles (preliminary chain shipped;
+                    archive full production chains on Zenodo/OSF, not in git)
+paper/              LaTeX sources of the written report
+original/           unmodified pre-audit research scripts (provenance)
 ```
 
-The original script snapshot still freezes χ(t) unless asked (`original/Bayesian_Validationn.py`). The packaged CLI default is the published entropy-sector path. Pass `--lcdm-limit` only if you want that frozen-sector original-script behaviour.
+## 📜 Citation
 
-Distinguish always:
-
-| Quantity | Meaning in this code |
-| --- | --- |
-| \(\chi^2\), RMS | goodness of fit of a point θ |
-| \(\ln L\) | Gaussian likelihood (includes \(\ln|2\pi C|\)) |
-| AIC / BIC | information criteria (parameter penalty) |
-| \(\ln Z\) | Bayesian evidence (nested sampling only) |
-| Bayes factor | \(Z_i/Z_j\), not \(\Delta\chi^2\) |
-
-Default CLI chains are the **published EUCYS posterior** (48 walkers,
-50,000 production, 2,000 burn-in, 3 ensembles, ESS 75,000, 7.2 M
-samples). `python scripts/run_validation.py --quick` is a package
-diagnostic and is **not** a quoted posterior.
-
-## 8. Results
-
-This repository **does not commit numerical posteriors**. Table 1
-**priors** in the source are
-
-\[
-H_0=72.8\pm 2.059,\;
-\Omega_\Lambda=0.685\pm 0.012,\;
-k=0.37\pm 0.068,\;
-t_{\mathrm{crit}}=15.8\pm 1.408
-\]
-
-(in the units of §5). Those are prior means/widths, **not** posterior
-intervals from a run in this git tree.
-
-Do not read EUCYS dashboard cartoons (synthetic walkers, calibrated
-Δχ² scoreboards) as output of `Bayesian_Validationn.py`. The original
-computing notes already separate those visualizations from this engine.
-
-## 9. Repository Structure
-
-```text
-LambdaCDM-plus-S/
-├── README.md
-├── LICENSE
-├── CITATION.cff
-├── REPRODUCING.md
-├── SCIENTIFIC_AUDIT.md
-├── src/lcdm_plus_s/          # installable package
-├── scripts/                  # run_solver / run_validation / reproduce_figures
-├── tests/
-├── configs/default.yaml
-├── app/streamlit_app.py
-├── mathematics/              # existing derivation notes + TeX
-├── paper/                    # written-report TeX (PDF not bundled)
-├── original/                 # unmodified input scripts
-├── data/                     # optional user CSVs (not committed)
-├── figures/                  # generated locally
-└── results/                  # generated locally
+```bibtex
+@software{lcdm_s_horizon_2026,
+  author    = {Desre, Liam},
+  title     = {ΛCDM+S: Bayesian Cosmological Pipeline for Horizon Entropy Models},
+  year      = {2026},
+  url       = {https://github.com/liamdesre0-byte/EUCYS---Lambda-CDM-S}
+}
 ```
 
-## 10. Installation
-
-```text
-python -m pip install -e ".[app,test]"
-```
-
-See `environment.yml` for conda. Python ≥ 3.10.
-
-## 11. Quick Start
-
-```text
-python -m pytest
-python scripts/run_solver.py --skip-validation --export-dir theory_export
-python scripts/reproduce_figures.py --output figures
-python -m streamlit run app/streamlit_app.py
-```
-
-## 12. Reproducing Results
-
-Full instructions, dataset paths, seeds, and MCMC sizes:
-[REPRODUCING.md](REPRODUCING.md).
-
-```text
-python scripts/run_solver.py
-python scripts/run_validation.py
-python scripts/run_validation.py --quick
-```
-
-## 13. Example Usage
-
-```python
-from lcdm_plus_s import BackgroundParams, solve_background
-
-lcdms = solve_background(BackgroundParams(lcdm_limit=False), nsteps=2000)
-lcdm = solve_background(BackgroundParams(lcdm_limit=True), nsteps=2000)
-print(lcdms.t0, lcdms.chi0, lcdm.t0)
-```
-
-Notebook: `notebooks/example_analysis.ipynb`.
-
-## 14. Data Sources
-
-Compressed DESI, BOSS, Planck, and SH0ES summary statistics are
-embedded with literature citations in `bayesian_validation.py`. Full
-supernova and rotation-curve catalogs are **not** distributed.
-[data/README.md](data/README.md).
-
-## 15. Reproducibility
-
-- Master seed default: `8`
-- Config snapshot / git hash / dataset fingerprints: Phase 15
-  `capture_reproducibility`
-- Two Hubble conversion constants exist (Bayesian vs analytical); do
-  not mix \(H\) arrays blindly (`SCIENTIFIC_AUDIT.md`)
-
-## 16. Limitations
-
-**Model assumptions.** Finite \(S_{\max}\); logistic / Γ-class closure;
-flat FLRW; Hubble-horizon identification \(R_H=1/H\); application of
-Bekenstein–Hawking entropy to that horizon; \(\Omega_\Lambda\) label
-means \(\Omega_{S,0}\).
-
-**Numerical approximations.** RK4 / RK45 backgrounds; compressed CMB
-not \(C_\ell\); BBKS \(P(k)\); sample-\(k\) Newtonian entropy
-perturbations; fixed \(r_d=147.09\) Mpc nuisance in BAO ratios.
-
-**Dataset limitations.** Production SN/SPARC/WMAP require external
-files; builtins for DESI/BOSS/Planck/SH0ES are **compressed** summaries,
-not the raw catalogs; some BAO rows are treated as diagonal in \(\sigma\).
-
-**Statistical limitations.** `--quick` MCMC is short; AIC/BIC are not
-evidence; `--lcdm-limit` freezes \(\chi(t)\) and is **not** the published
-EUCYS posterior; nested-sampling live points default
-to 25. At the code fiducial, a smoke evaluation of the 30-element
-production joint returned a very large \(\chi^2\) (see
-`SCIENTIFIC_AUDIT.md`); do not treat that number as a validated fit.
-
-**Missing physics / future work.** Full CLASS/CAMB entropy-sector
-Boltzmann hierarchy; local Einstein equations from the Hubble horizon
-alone (explicitly not claimed); UV completion; rotation-curve dark-matter
-replacement (explicitly forbidden by Phase 0).
-
-## 17. Future Work
-
-Items already labelled future in the source: Hamiltonian MCMC, full
-\(C_\ell\), WMAP/SPARC real catalogs, Cobaya as a sampler only with
-this theory wrapper.
-
-## 18. Citation
-
-See `CITATION.cff`. Cite the software as research code by Liam Desre.
-No DOI or journal article is invented here.
-
-## 19. License
-
-MIT — `LICENSE`.
+See `CITATION.cff` for machine-readable metadata. Data credits: Pantheon+
+(Brout et al. 2022; Scolnic et al. 2022), DES-SN5YR (DES Collaboration
+2024), DESI DR2 BAO, BOSS DR12, SH0ES (Riess et al. 2022), Planck 2018
+compressed distance priors.

@@ -4079,11 +4079,12 @@ class Table2Entry:
 TABLE2_DATASETS: tuple[Table2Entry, ...] = (
     Table2Entry("pantheon_plus", "Pantheon+ (raw)", "1550 SNe", "1550",
                 1550, 1550, "μ(z)", "supernova"),
-    # DES-SN Y5: 1635 UNIQUE supernovae represented by 1820 measurement
-    # rows.  N_SN=1635 and N_measurements=1820 are different quantities and
-    # must never be conflated (BIC N, dataset tables, prose).
+    # DES-SN Y5 (Dovekie HD, verified from the data file itself):
+    # 1820 UNIQUE supernovae = 1623 DES SNe + 197 external low-z anchors.
+    # The loader records n_unique_sn / n_measurements per file; quote the
+    # verified counts, not remembered ones.
     Table2Entry("des_sny5", "DES-SNY5 (held-out)",
-                "1635 unique SNe / 1820 measurement rows", "1820",
+                "1820 unique SNe (1623 DES + 197 low-z)", "1820",
                 1820, 1820, "μ(z)", "supernova"),
     Table2Entry("shoes", "SH0ES (raw)", "37 hosts + 42 SNe", "1–40",
                 1, 40, "H0 calibration", "shoes"),

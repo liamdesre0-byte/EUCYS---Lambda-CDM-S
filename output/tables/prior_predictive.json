@@ -1,0 +1,24 @@
+{
+  "stage": "prior_predictive",
+  "metric": "A_H (horizon area, written-report formula)",
+  "n_draws": 500,
+  "seed": 20260728,
+  "mean_frmse": 0.3307763578763343,
+  "sd_frmse": 0.05677370027746553,
+  "sem_frmse": 0.002538997063092232,
+  "mean_similarity": 0.6692236421236657,
+  "best_similarity": 0.8256385473965286,
+  "best_theta": {
+    "H0": 72.00222728683137,
+    "Omega_Lambda": 0.6773572764813673,
+    "k": 0.1788039485268881,
+    "t_crit": 17.11562641165947
+  },
+  "ks_pvalues": {
+    "H0": 0.54914674117574,
+    "Omega_Lambda": 0.9724089759120247,
+    "k": 0.31249702671041274,
+    "t_crit": 0.6733616355991117
+  },
+  "labeling_note": "best_similarity is the BEST prior-predictive realization, a model-to-model comparison vs flat LCDM sharing (H0, Omega_L) \u2014 it is NOT observational accuracy."
+}

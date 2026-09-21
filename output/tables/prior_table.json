@@ -1,0 +1,31 @@
+{
+  "declared_priors": {
+    "H0": {
+      "mean": 73.0,
+      "sigma": 2.0
+    },
+    "Omega_Lambda": {
+      "mean": 0.688,
+      "sigma": 0.012
+    },
+    "k": {
+      "mean": 0.372,
+      "sigma": 0.07
+    },
+    "t_crit": {
+      "mean": 15.827,
+      "sigma": 1.5
+    }
+  },
+  "provenance": {
+    "H0_planck_anchored_raw": 67.75741978753076,
+    "H0_derivation_reproduces_declared": false,
+    "H0_note": "PROVENANCE DISCLOSURE (anti-circularity spec \u00a7B.5): the Planck algebraic anchoring h=\u221a(\u03c9_m h\u00b2/\u03a9_m) yields H0 \u2248 67.8 km/s/Mpc, which does NOT reproduce the declared Table-1 prior centre 73.0. The declared prior is therefore a methodological choice, not the output of this calculation. Do not describe the H0 prior as Planck-derived until the stated anchoring procedure is corrected to produce it, or the report wording is updated.",
+    "k_from_tau": {
+      "tau_gyr": 2.6881720430107525,
+      "k_mean": 0.372
+    },
+    "t_crit_crossover_gyr": 15.827
+  },
+  "stage": "prior (no posterior/likelihood information used)"
+}

@@ -40,8 +40,17 @@ credentials.json
 *.pem
 
 # Large local data (do not commit survey catalogs)
-data/*.csv
 data/*.fits
 data/*.tar
 data/*.gz
 !data/README.md
+# Compressed inference vectors ARE committed (small, public survey data):
+# pantheon_plus.csv, des_sny5.csv, shoes_h0.csv
+!data/pantheon_plus.csv
+!data/des_sny5.csv
+!data/shoes_h0.csv
+
+# Generated artifacts: small outputs are committed for presentation;
+# archive full production chains (>50 MB) on Zenodo/OSF instead of git.
+output/**/*.mmap
+output/**/*.npz
