@@ -1186,7 +1186,7 @@ FIXED_ASSUMPTIONS: tuple[tuple[str, str], ...] = (
     ("Spatial curvature", "Ω_k = 0 (spatially flat FLRW)"),
     ("Radiation content", "Ω_{r,0} = 9×10⁻⁵ (fixed, CMB-calibrated)"),
     ("Baryon density", "ω_b = 0.02236 (fixed from Planck)"),
-    ("Sound horizon", "r_d = 147.09 Mpc (Planck drag epoch)"),
+    ("Sound horizon", "r_s(z*), r_d(z_d) computed per-θ (HS96/EH98 + integral)"),
     ("Last scattering", "z_* = 1089.90 (Planck-like)"),
     ("Transition functional form", "Logistic sigmoid (unique solution of ẇ = k w(1−w))"),
     ("Entropy source", "Horizon thermodynamics: S_H ∝ A_H = 4π/H²"),
@@ -1955,6 +1955,11 @@ class MixingPriorResult:
     h: float
     rs_anchor_mpc: float
     notes: str
+    # Provenance (anti-circularity spec §B.5): raw value the Planck
+    # anchoring calculation actually produces, and whether it reproduces
+    # the declared Table-1 prior centre.
+    H0_planck_anchored_raw: float = float("nan")
+    derivation_reproduces_declared: bool = False
 
 
 def algebraic_mixed_hubble(z: float, H0: float, Omega_Lambda: float,
@@ -1997,8 +2002,12 @@ def derive_hubble_omega_priors_from_mixing(
     Omega_Lambda_mean = FIDUCIAL_OMEGA_LAMBDA  # entropy density today
     omega_r0 = 9.0e-5
     omega_m = 1.0 - Omega_Lambda_mean - omega_r0
-    _ = math.sqrt(omega_m_h2 / omega_m)  # algebraic scaffolding
-    H0_mean = FIDUCIAL_H0  # best-posterior / Planck-mixed centre
+    # The actual Planck anchoring calculation: h = sqrt(ω_m h² / Ω_m).
+    h_raw = math.sqrt(omega_m_h2 / omega_m)
+    H0_raw = 100.0 * h_raw
+    # DECLARED Table-1 prior centre (written-report methodology).
+    H0_mean = FIDUCIAL_H0
+    reproduces = abs(H0_raw - H0_mean) <= 1.0
     return MixingPriorResult(
         H0_mean=H0_mean,
         Omega_Lambda_mean=Omega_Lambda_mean,
@@ -2007,8 +2016,18 @@ def derive_hubble_omega_priors_from_mixing(
         omega_m0=omega_m,
         h=H0_mean / 100.0,
         rs_anchor_mpc=rs_mpc,
-        notes=("H_mix=(1−w)H_m+w H_S; Ω_Λ≡Ω_S,0 entropy density; "
-               "widths from Planck calibration accuracy (Table 1)"),
+        notes=(
+            "PROVENANCE DISCLOSURE (anti-circularity spec §B.5): the "
+            f"Planck algebraic anchoring h=√(ω_m h²/Ω_m) yields H0 ≈ "
+            f"{H0_raw:.1f} km/s/Mpc, which does NOT reproduce the declared "
+            f"Table-1 prior centre {H0_mean:.1f}. The declared prior is "
+            "therefore a methodological choice, not the output of this "
+            "calculation. Do not describe the H0 prior as Planck-derived "
+            "until the stated anchoring procedure is corrected to produce "
+            "it, or the report wording is updated."
+        ),
+        H0_planck_anchored_raw=H0_raw,
+        derivation_reproduces_declared=reproduces,
     )
 
 
@@ -3425,7 +3444,57 @@ def render_background_plots(
 # This facade is the *only* cosmology surface the inference engine may call.
 # ---------------------------------------------------------------------------
 
-Z_STAR_CMB = 1089.90          # last-scattering redshift (Planck-like)
+Z_STAR_CMB = 1089.90          # reference z* (fallback only; production uses Hu-Sugiyama)
+
+OMEGA_GAMMA_H2 = 2.469e-5     # photon density ω_γ (T_CMB = 2.7255 K)
+NEFF_RAD_BOOST = 1.0 + 0.2271 * 3.046   # photons → photons+neutrinos
+
+
+def cmb_z_star_hu_sugiyama(omega_b_h2: float, omega_m_h2: float) -> float:
+    """Last-scattering redshift z* — Hu & Sugiyama (1996) fitting formula."""
+    ob = max(float(omega_b_h2), 1e-6)
+    om = max(float(omega_m_h2), 1e-6)
+    g1 = 0.0783 * ob ** (-0.238) / (1.0 + 39.5 * ob ** 0.763)
+    g2 = 0.560 / (1.0 + 21.1 * ob ** 1.81)
+    return 1048.0 * (1.0 + 0.00124 * ob ** (-0.738)) * (1.0 + g1 * om ** g2)
+
+
+def bao_z_drag_eh98(omega_b_h2: float, omega_m_h2: float) -> float:
+    """Drag epoch z_d — Eisenstein & Hu (1998) fitting formula."""
+    ob = max(float(omega_b_h2), 1e-6)
+    om = max(float(omega_m_h2), 1e-6)
+    b1 = 0.313 * om ** (-0.419) * (1.0 + 0.607 * om ** 0.674)
+    b2 = 0.238 * om ** 0.223
+    return (1291.0 * om ** 0.251 / (1.0 + 0.659 * om ** 0.828)
+            * (1.0 + b1 * ob ** b2))
+
+
+def sound_horizon_mpc(z_end: float, H0_kms: float, Omega_m: float,
+                      omega_b_h2: float, *, n_steps: int = 3000) -> float:
+    """
+    Comoving sound horizon r_s(z_end) = ∫ c_s dt/a  [Mpc], integrated in ln a
+    over the radiation+matter era with baryon loading
+    R_b = (3ω_b/4ω_γ) a.  Responds to (H0, Ω_m, ω_b) — this replaces the
+    old fixed r = 147.09 Mpc drag-scale shortcut, which is the WRONG epoch
+    for ℓ_A and does not vary with the sampled parameters.
+    """
+    h = max(float(H0_kms), 1e-9) / 100.0
+    omega_m_h2 = max(float(Omega_m), 1e-9) * h * h
+    omega_r_h2 = OMEGA_GAMMA_H2 * NEFF_RAD_BOOST
+    a_end = 1.0 / (1.0 + max(float(z_end), 1.0))
+    la0, la1 = math.log(1e-9), math.log(a_end)
+    dla = (la1 - la0) / int(n_steps)
+    total, prev = 0.0, None
+    for i in range(int(n_steps) + 1):
+        a = math.exp(la0 + i * dla)
+        R_b = 0.75 * (float(omega_b_h2) / OMEGA_GAMMA_H2) * a
+        cs = C_KM_S / math.sqrt(3.0 * (1.0 + R_b))
+        Hz = 100.0 * math.sqrt(omega_m_h2 / a ** 3 + omega_r_h2 / a ** 4)
+        f = cs / (a * Hz)            # dr_s/dln a
+        if prev is not None:
+            total += 0.5 * (prev + f) * dla
+        prev = f
+    return total
 SIGMA8_FID = 0.811            # present-day σ8 used to normalize P(k) / fσ8
 K_PIVOT_MPC = 0.05            # primordial pivot [Mpc⁻¹]
 N_S_FID = 0.9649
@@ -3712,8 +3781,8 @@ class ModifiedCLASS:
         # 4. P(k)
         pspec = self._stage_pk(Om, h)
 
-        # 5. distances
-        dist = self._stage_distances(H_kms)
+        # 5. distances (parameter-dependent r_d)
+        dist = self._stage_distances(H_kms, Om, H0)
 
         # 6. growth
         grow = self._stage_growth(sol, bg_params)
@@ -3810,10 +3879,18 @@ class ModifiedCLASS:
 
     def _stage_cmb(self, H_kms: Callable[[float], float],
                    Om: float, H0: float) -> CMBPredictions:
-        """Compressed Planck-like (R, ℓ_A, ω_b) from background distances."""
-        zstar = Z_STAR_CMB
+        """
+        Compressed Planck-like (R, ℓ_A, ω_b) from background distances.
+
+        z* from Hu & Sugiyama; ℓ_A uses r_s(z*) (sound horizon at LAST
+        SCATTERING, parameter-dependent) — NOT the fixed drag-epoch
+        147.09 Mpc, which is the wrong epoch and does not respond to θ.
+        """
+        h = H0 / 100.0
+        omega_m_h2 = max(Om, 1e-12) * h * h
+        zstar = cmb_z_star_hu_sugiyama(self.omega_b, omega_m_h2)
         chi = comoving_distance(H_kms, zstar, nsteps=4000)
-        rs = self.r_d_mpc
+        rs = sound_horizon_mpc(zstar, H0, Om, self.omega_b)
         R = math.sqrt(max(Om, 1e-12)) * (H0 / C_KM_S) * chi
         l_A = math.pi * chi / max(rs, 1e-30)
         return CMBPredictions(
@@ -3821,9 +3898,18 @@ class ModifiedCLASS:
             z_star=zstar, chi_star_mpc=chi, r_s_mpc=rs,
         )
 
-    def _stage_distances(self, H_kms: Callable[[float], float]
-                         ) -> DistancePredictions:
-        rd = self.r_d_mpc
+    def _stage_distances(self, H_kms: Callable[[float], float],
+                         Om: float | None = None,
+                         H0: float | None = None) -> DistancePredictions:
+        # Parameter-dependent drag-scale r_d (EH98 z_d + sound-horizon
+        # integral) when (Om, H0) are supplied; fixed Planck value only
+        # as a legacy fallback.
+        if Om is not None and H0 is not None:
+            h = H0 / 100.0
+            zd = bao_z_drag_eh98(self.omega_b, max(Om, 1e-12) * h * h)
+            rd = sound_horizon_mpc(zd, H0, Om, self.omega_b)
+        else:
+            rd = self.r_d_mpc
 
         def chi(z: float) -> float:
             return comoving_distance(H_kms, z)
@@ -3993,8 +4079,12 @@ class Table2Entry:
 TABLE2_DATASETS: tuple[Table2Entry, ...] = (
     Table2Entry("pantheon_plus", "Pantheon+ (raw)", "1550 SNe", "1550",
                 1550, 1550, "μ(z)", "supernova"),
-    Table2Entry("des_sny5", "DES-SNY5 (raw)", "1635 SNe", "1635",
-                1635, 1635, "μ(z)", "supernova"),
+    # DES-SN Y5: 1635 UNIQUE supernovae represented by 1820 measurement
+    # rows.  N_SN=1635 and N_measurements=1820 are different quantities and
+    # must never be conflated (BIC N, dataset tables, prose).
+    Table2Entry("des_sny5", "DES-SNY5 (held-out)",
+                "1635 unique SNe / 1820 measurement rows", "1820",
+                1820, 1820, "μ(z)", "supernova"),
     Table2Entry("shoes", "SH0ES (raw)", "37 hosts + 42 SNe", "1–40",
                 1, 40, "H0 calibration", "shoes"),
     Table2Entry("desi_dr2", "DESI DR2 (compressed)",
@@ -4451,19 +4541,40 @@ class SupernovaDataset(Dataset):
 
         path = Path(source)
         z, data, sig = [], [], []
+        sn_ids: list[str] = []
         for cols in _parse_csv_rows(path.read_text(encoding="utf-8")):
             if len(cols) < 3:
                 continue
             try:
-                z.append(float(cols[0])); data.append(float(cols[1])); sig.append(float(cols[2]))
+                # numeric-first format: z, mu, sigma
+                zi, mi, si = float(cols[0]), float(cols[1]), float(cols[2])
+                sid = None
             except ValueError:
-                continue
+                # ID-first format (e.g. DES CID column): id, z, mu, sigma
+                if len(cols) < 4:
+                    continue
+                try:
+                    zi, mi, si = float(cols[1]), float(cols[2]), float(cols[3])
+                    sid = cols[0]
+                except ValueError:
+                    continue
+            z.append(zi); data.append(mi); sig.append(si)
+            if sid is not None:
+                sn_ids.append(sid)
         if not data:
             raise ValueError(f"no SN rows parsed from {path}")
+        # N_SN (unique supernovae) vs N_measurements (likelihood rows) are
+        # DIFFERENT quantities.  DES-SN Y5: 1635 unique SNe / 1820 rows.
+        n_measurements = len(data)
+        n_unique = len(set(sn_ids)) if sn_ids else None
         return cls(
             name=name, kind="supernova", citations=cites,
             z=z, data=data, sigma=sig, observable="mu",
-            meta=_table2_meta(t2, source=str(path), n_objects_loaded=len(data)),
+            meta=_table2_meta(
+                t2, source=str(path), n_objects_loaded=n_measurements,
+                n_measurements=n_measurements,
+                n_unique_sn=(n_unique if n_unique is not None
+                             else "unknown (no ID column in file)")),
         )
 
     @classmethod
@@ -5090,6 +5201,36 @@ def assert_real_joint_likelihood(joint: JointLikelihood) -> None:
         )
 
 
+def cmb_reference_regression(*, tol: float = 0.02) -> dict[str, float]:
+    """
+    Regression test (spec §I.28): evaluate the compressed-CMB observables at
+    a reference Planck-like flat ΛCDM (H0=67.36, Ωm=0.3153, ω_b=0.02237)
+    and require (R, ℓ_A) within ``tol`` of the Planck 2018 compressed means.
+    Raises RuntimeError on failure so a broken CMB implementation can never
+    silently steer the ΛCDM+S posterior.
+    """
+    H0_ref, Om_ref, ob_ref = 67.36, 0.3153, 0.02237
+    h = H0_ref / 100.0
+    om_h2 = Om_ref * h * h
+    zstar = cmb_z_star_hu_sugiyama(ob_ref, om_h2)
+    chi_star = _flat_lcdm_chi(zstar, H0_ref, Om_ref, nsteps=4000)
+    rs = sound_horizon_mpc(zstar, H0_ref, Om_ref, ob_ref)
+    R = math.sqrt(Om_ref) * (H0_ref / C_KM_S) * chi_star
+    l_A = math.pi * chi_star / rs
+    R_ref, lA_ref = PLANCK2018_COMPRESSED_MEAN[0], PLANCK2018_COMPRESSED_MEAN[1]
+    dR = abs(R - R_ref) / R_ref
+    dlA = abs(l_A - lA_ref) / lA_ref
+    out = {"z_star": zstar, "r_s_mpc": rs, "chi_star_mpc": chi_star,
+           "R": R, "l_A": l_A, "rel_err_R": dR, "rel_err_lA": dlA}
+    if dR > tol or dlA > tol:
+        raise RuntimeError(
+            f"FATAL: compressed-CMB regression failed on reference ΛCDM: "
+            f"R={R:.4f} (Planck {R_ref}), l_A={l_A:.2f} (Planck {lA_ref}), "
+            f"rel errs {dR:.3%}/{dlA:.3%} > {tol:.0%}. Fix the CMB "
+            f"implementation before running inference.")
+    return out
+
+
 def build_production_posterior(
         *,
         data_dir: str | Path | None = None,
@@ -5126,6 +5267,7 @@ def build_production_posterior(
             raise RuntimeError(f"FATAL: missing likelihood class for {key!r}")
         likes.append(TABLE2_LIKELIHOOD_CLASSES[key](theory))
 
+    holdout_likes: dict[str, Likelihood] = {}
     sn_files = resolve_data_dir_sn_files(data_dir)
     if require_sn:
         missing = [k for k in OPTIONAL_SN_FILE_KEYS if k not in sn_files]
@@ -5140,14 +5282,47 @@ def build_production_posterior(
             ds = SupernovaDataset.load(path, catalog="pantheon_plus")
             likes.append(PantheonLikelihood(theory, ds))
         elif key == "des_sny5":
+            # DES-SN Y5 is HELD OUT (written-report §6.2): it must never
+            # enter the training/posterior joint likelihood.  It is kept
+            # aside for posterior-predictive validation only.
             ds = SupernovaDataset.load(path, catalog="des_sny5")
-            likes.append(DESLikelihood(theory, ds))
+            holdout_likes["des_sny5"] = DESLikelihood(theory, ds)
         else:
             raise RuntimeError(f"unhandled SN key {key!r}")
 
     joint = JointLikelihood(
         likelihoods=likes, name="ProductionTable2JointLikelihood")
     assert_real_joint_likelihood(joint)
+    # Hard anti-leak assertion: the held-out DES likelihood must not be a
+    # component of the training joint (written-report hold-out design).
+    for lk in likes:
+        if getattr(lk, "table2_key", None) == "des_sny5" or isinstance(lk, DESLikelihood):
+            raise RuntimeError(
+                "FATAL: DES-SN Y5 found inside the training joint likelihood "
+                "— the report declares DES held out. Remove it from training.")
+    joint.holdout_likelihoods = holdout_likes  # posterior-predictive use only
+
+    # Anti-regression guard: (k, t_crit) must influence the background.
+    # If this fails, the entropy sector has been silently frozen again
+    # and the k / t_crit posteriors would be meaningless prior copies.
+    if not lcdm_limit:
+        _bg_a = solve_background(BackgroundParams(
+            k_gyr=0.30, t_crit_gyr=14.0), nsteps=300)
+        _bg_b = solve_background(BackgroundParams(
+            k_gyr=0.45, t_crit_gyr=17.0), nsteps=300)
+        _h_a = _bg_a.hubble_of_z(0.5)
+        _h_b = _bg_b.hubble_of_z(0.5)
+        _rel = abs(_h_a - _h_b) / max(abs(_h_b), 1e-30)
+        if _rel < 1e-8:
+            raise RuntimeError(
+                "FATAL: changing (k, t_crit) does not change H(z) — the "
+                "entropy sector is frozen. Fix before any inference run.")
+
+    # CMB implementation regression: the compressed likelihood must accept
+    # a reference Planck-like flat LCDM before it may constrain LCDM+S.
+    if not skip_cmb:
+        cmb_reference_regression()
+
     return reg, theory, joint, Posterior(reg, joint)
 
 
@@ -5799,7 +5974,8 @@ def _dataset_specific_notes(ds: Dataset, observable: str) -> str:
             notes.append("diagonal σ_μ only — check if sys covariance needed")
         notes.append("distance modulus μ = 5 log₁₀(d_L) + 25")
     elif observable == "BAO":
-        notes.append("r_d consistency: fixed at 147.09 Mpc (Planck)")
+        notes.append("r_d consistency: parameter-dependent r_d(z_d) "
+                     "(EH98 drag epoch + sound-horizon integral)")
         if ds.labels:
             label_set = set(ds.labels)
             types = []
