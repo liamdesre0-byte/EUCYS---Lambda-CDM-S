@@ -247,10 +247,10 @@ ANALYTICAL_S_EARLY: float = 1.0e-3
 # Table-1 / paper fiducials: t_crit is the χ=1/2 thermo midpoint (C=1 logistic).
 # With t_crit ≈ 15.8 Gyr > t0, the midpoint is still ahead — χ0 < 1/2 today and
 # the de Sitter attractor χ→1 lies in the future (this is intentional, not a bug).
-FIDUCIAL_H0: float = 72.8
-FIDUCIAL_OMEGA_LAMBDA: float = 0.685
-FIDUCIAL_K_GYR: float = 0.37
-FIDUCIAL_T_CRIT_GYR: float = 15.8
+FIDUCIAL_H0: float = 73.0
+FIDUCIAL_OMEGA_LAMBDA: float = 0.688
+FIDUCIAL_K_GYR: float = 0.372
+FIDUCIAL_T_CRIT_GYR: float = 15.827
 FIDUCIAL_T0_ANCHOR_GYR: float = 13.8  # only a first guess for χ0; refined by age
 
 
@@ -1803,21 +1803,21 @@ class Table1PriorSpec:
 # Published Table 1 values (EUCYS written report)
 TABLE1_PRIORS: tuple[Table1PriorSpec, ...] = (
     Table1PriorSpec(
-        "H0", "H_0", FIDUCIAL_H0, 2.059, "km s^{-1} Mpc^{-1}",
+        "H0", "H_0", FIDUCIAL_H0, 2.0, "km s^{-1} Mpc^{-1}",
         "algebraic_mixing_Planck",
-        "best-posterior / Planck-mixed H0 centre"),
+        "written-report design width σ=2.0 (ensemble sample std ≈ 2.059)"),
     Table1PriorSpec(
         "Omega_Lambda", "Ω_Λ", FIDUCIAL_OMEGA_LAMBDA, 0.012, "dimensionless",
         "algebraic_mixing_Planck",
-        "best-posterior Ω_Λ ≡ entropy density Ω_S,0"),
+        "Ω_Λ ≡ entropy density Ω_S,0 (report Table 1)"),
     Table1PriorSpec(
-        "k", "k≡γ", FIDUCIAL_K_GYR, 0.068, "Gyr^{-1}",
+        "k", "k≡γ", FIDUCIAL_K_GYR, 0.07, "Gyr^{-1}",
         "dynamical_ODE",
-        "analytical_solver closure rate χ̇=kχ(1−χ); σ from transition width"),
+        "written-report design width σ=0.07 (ensemble sample std ≈ 0.068)"),
     Table1PriorSpec(
-        "t_crit", "t_crit", FIDUCIAL_T_CRIT_GYR, 1.408, "Gyr",
+        "t_crit", "t_crit", FIDUCIAL_T_CRIT_GYR, 1.5, "Gyr",
         "dynamical_ODE",
-        "χ=1/2 thermo midpoint (C=1 logistic); μ≈15.8 Gyr best posterior"),
+        "written-report design width σ=1.5 (ensemble sample std ≈ 1.408)"),
 )
 
 
@@ -1918,8 +1918,8 @@ def derive_transition_priors_from_odes(
         t_crit_mean=t_crit_mean,
         tau_tr=tau_tr_gyr,
         max_slope=k_mean / 4.0,
-        k_sigma=0.068,
-        t_crit_sigma=1.408,
+        k_sigma=0.07,
+        t_crit_sigma=1.5,
         crossover_target_gyr=crossover_gyr,
         notes=("χ̇=kχ(1−χ) ⇒ sigmoid with χ(t_crit)=1/2; "
                "μ_tcrit≈15.827 Gyr from residual crossover / Table 1"),
@@ -2002,7 +2002,7 @@ def derive_hubble_omega_priors_from_mixing(
     return MixingPriorResult(
         H0_mean=H0_mean,
         Omega_Lambda_mean=Omega_Lambda_mean,
-        H0_sigma=2.059,
+        H0_sigma=2.0,
         Omega_Lambda_sigma=0.012,
         omega_m0=omega_m,
         h=H0_mean / 100.0,
@@ -2113,10 +2113,14 @@ class PriorPredictiveResult:
     best_theta: dict[str, float]
     ks: dict[str, float]
     ks_p: dict[str, float]
-    metric: str = "R_H"          # "R_H" (paper) or "A_H"
-    paper_mean_frmse: float = 0.149
-    paper_std_frmse: float = 0.004
-    paper_best_similarity: float = 0.934
+    metric: str = "A_H"          # "A_H" (written-report formula) or "R_H"
+    # NOTE: the written report's earlier 14.9% / 93.4% figures were computed
+    # on R_H = 1/H, NOT on horizon area.  With the area metric (the formula
+    # actually printed in the report) the fractional RMSE is ~2× larger.
+    # Regenerate report numbers from this run's output; do not quote the old ones.
+    paper_mean_frmse: float = float("nan")
+    paper_std_frmse: float = float("nan")
+    paper_best_similarity: float = float("nan")
 
 
 def prior_predictive_horizon_check(
@@ -2126,7 +2130,7 @@ def prior_predictive_horizon_check(
         seed: int = 20260728,
         nsteps: int = 500,
         z_grid: Sequence[float] | None = None,
-        metric: str = "R_H",
+        metric: str = "A_H",
 ) -> PriorPredictiveResult:
     """
     Monte Carlo prior predictive check (paper §8.3 / Figure 10):
@@ -2135,13 +2139,12 @@ def prior_predictive_horizon_check(
       2. Propagate each draw through the background solver (ODE transition)
       3. Compare the Hubble-horizon scale to flat ΛCDM with the *same*
          (H0, Ω_Λ) — isolating the (k, t_crit) dynamical-ODE sector
-      4. Default metric is R_H ∝ 1/H (linear horizon radius).  The area
-         A_H = 4π R_H² is the plotted observable; fractional RMSE on A_H
-         is ~2× larger.  Published 14.9% matches R_H.
+      4. Default metric is A_H ∝ 1/H² (horizon AREA), matching the fRMSE
+         formula printed in the written report.  The older published
+         14.9% / 93.4% figures were computed on R_H = 1/H and must NOT be
+         quoted against area-metric output (area fRMSE is ~2× larger).
       5. Report fractional RMSE ensemble + best similarity
       6. KS-test each marginal against its Gaussian prior
-
-    Paper result: mean fractional RMSE = 14.9 ± 0.4%, best similarity = 93.4%.
     """
     if metric not in ("R_H", "A_H"):
         raise ValueError("metric must be 'R_H' or 'A_H'")
@@ -5093,7 +5096,7 @@ def build_production_posterior(
         theory_nsteps: int = 400,
         require_sn: bool = False,
         skip_cmb: bool = False,
-        lcdm_limit: bool = True,
+        lcdm_limit: bool = False,
 ) -> tuple[ParameterRegistry, ModifiedCLASS, JointLikelihood, Posterior]:
     """
     Build Posterior(registry, JointLikelihood) from real catalogs only.
@@ -5103,11 +5106,11 @@ def build_production_posterior(
     Raises RuntimeError / FileNotFoundError if real data cannot be loaded.
 
     lcdm_limit
-        Function default remains ``True`` so callers that omit the flag
-        match the original script (entropy sector frozen to constant Ω_Λ).
-        The packaged EUCYS CLI / ``configs/default.yaml`` pass ``False``
-        (``--entropy-sector``) so the published 7.2-million-sample
-        posterior actually varies χ(t).
+        Default is ``False``: the sampled (k, t_crit) enter the background
+        only through the dynamical χ(t) entropy sector.  ``True`` freezes
+        χ and reduces the model to flat ΛCDM (the k / t_crit posteriors
+        then collapse to exact prior copies) — use it ONLY for explicit
+        ΛCDM-baseline comparison runs, never for ΛCDM+S inference.
     """
     if ALLOW_SCAFFOLD_DATASETS:
         raise RuntimeError(
@@ -13034,26 +13037,25 @@ def _check_priors() -> dict[str, bool]:
     H_S = mix.H0_mean * math.sqrt(mix.Omega_Lambda_mean)
     out["mixing_late_entropy"] = abs(H_late - H_S) / H_S < 0.05
 
-    # --- Prior predictive check (500 runs, R_H vs ΛCDM; A_H for plots) ------
+    # --- Prior predictive check (500 runs, horizon AREA vs ΛCDM) -------------
+    # Metric = A_H to match the fRMSE formula in the written report.
+    # Do NOT assert agreement with previously published numbers here: the
+    # code output defines the report numbers, never the other way around.
     print("  [Phase 3] prior predictive check: 500-run Hubble-horizon ensemble...",
           flush=True)
     ppc = prior_predictive_horizon_check(n_runs=500, seed=20260728, nsteps=500)
     out["ppc_n_runs"] = ppc.n_runs == 500
-    out["ppc_metric_RH"] = ppc.metric == "R_H"
+    out["ppc_metric_area"] = ppc.metric == "A_H"
     out["ppc_frmse_finite"] = math.isfinite(ppc.mean_frmse) and ppc.mean_frmse > 0
-    # Paper: 14.9 ± 0.4% on the linear horizon scale R_H ∝ 1/H.
-    out["ppc_mean_frmse_ballpark"] = 0.10 <= ppc.mean_frmse <= 0.22
-    out["ppc_best_similarity_high"] = ppc.best_similarity >= 0.90
-    out["ppc_near_paper_mean"] = abs(ppc.mean_frmse - 0.149) < 0.025
+    out["ppc_frmse_sane"] = 0.0 < ppc.mean_frmse < 1.0
     out["ppc_ks_all_ok"] = all(p > 0.01 for p in ppc.ks_p.values())
     _check_priors.last_ppc = ppc  # type: ignore[attr-defined]
     print(f"           metric               = {ppc.metric}  "
-          f"(A_H = 4π R_H² plotted; RMSE on R_H)", flush=True)
+          f"(fRMSE on horizon area, per written-report formula)", flush=True)
     print(f"           mean fractional RMSE = {100 * ppc.mean_frmse:.1f} "
-          f"± {100 * ppc.std_frmse:.1f}%  "
-          f"(paper 14.9 ± 0.4%)", flush=True)
-    print(f"           best similarity      = {100 * ppc.best_similarity:.1f}%  "
-          f"(paper 93.4%)", flush=True)
+          f"± {100 * ppc.std_frmse:.1f}%", flush=True)
+    print(f"           best similarity      = {100 * ppc.best_similarity:.1f}%",
+          flush=True)
     print(f"           KS p-values          = "
           + ", ".join(f"{k}:{ppc.ks_p[k]:.3f}" for k in ppc.ks_p), flush=True)
     return out
