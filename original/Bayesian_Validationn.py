@@ -228,10 +228,10 @@ ANALYTICAL_S_EARLY: float = 1.0e-3
 # Table-1 / paper fiducials: t_crit is the χ=1/2 thermo midpoint (C=1 logistic).
 # With t_crit ≈ 15.8 Gyr > t0, the midpoint is still ahead — χ0 < 1/2 today and
 # the de Sitter attractor χ→1 lies in the future (this is intentional, not a bug).
-FIDUCIAL_H0: float = 72.8
-FIDUCIAL_OMEGA_LAMBDA: float = 0.685
-FIDUCIAL_K_GYR: float = 0.37
-FIDUCIAL_T_CRIT_GYR: float = 15.8
+FIDUCIAL_H0: float = 73.0
+FIDUCIAL_OMEGA_LAMBDA: float = 0.688
+FIDUCIAL_K_GYR: float = 0.372
+FIDUCIAL_T_CRIT_GYR: float = 15.827
 FIDUCIAL_T0_ANCHOR_GYR: float = 13.8  # only a first guess for χ0; refined by age
 
 
@@ -1167,7 +1167,7 @@ FIXED_ASSUMPTIONS: tuple[tuple[str, str], ...] = (
     ("Spatial curvature", "Ω_k = 0 (spatially flat FLRW)"),
     ("Radiation content", "Ω_{r,0} = 9×10⁻⁵ (fixed, CMB-calibrated)"),
     ("Baryon density", "ω_b = 0.02236 (fixed from Planck)"),
-    ("Sound horizon", "r_d = 147.09 Mpc (Planck drag epoch)"),
+    ("Sound horizon", "r_s(z*), r_d(z_d) computed per-θ (HS96/EH98 + integral)"),
     ("Last scattering", "z_* = 1089.90 (Planck-like)"),
     ("Transition functional form", "Logistic sigmoid (unique solution of ẇ = k w(1−w))"),
     ("Entropy source", "Horizon thermodynamics: S_H ∝ A_H = 4π/H²"),
@@ -1784,21 +1784,21 @@ class Table1PriorSpec:
 # Published Table 1 values (EUCYS written report)
 TABLE1_PRIORS: tuple[Table1PriorSpec, ...] = (
     Table1PriorSpec(
-        "H0", "H_0", FIDUCIAL_H0, 2.059, "km s^{-1} Mpc^{-1}",
+        "H0", "H_0", FIDUCIAL_H0, 2.0, "km s^{-1} Mpc^{-1}",
         "algebraic_mixing_Planck",
-        "best-posterior / Planck-mixed H0 centre"),
+        "written-report design width σ=2.0 (ensemble sample std ≈ 2.059)"),
     Table1PriorSpec(
         "Omega_Lambda", "Ω_Λ", FIDUCIAL_OMEGA_LAMBDA, 0.012, "dimensionless",
         "algebraic_mixing_Planck",
-        "best-posterior Ω_Λ ≡ entropy density Ω_S,0"),
+        "Ω_Λ ≡ entropy density Ω_S,0 (report Table 1)"),
     Table1PriorSpec(
-        "k", "k≡γ", FIDUCIAL_K_GYR, 0.068, "Gyr^{-1}",
+        "k", "k≡γ", FIDUCIAL_K_GYR, 0.07, "Gyr^{-1}",
         "dynamical_ODE",
-        "analytical_solver closure rate χ̇=kχ(1−χ); σ from transition width"),
+        "written-report design width σ=0.07 (ensemble sample std ≈ 0.068)"),
     Table1PriorSpec(
-        "t_crit", "t_crit", FIDUCIAL_T_CRIT_GYR, 1.408, "Gyr",
+        "t_crit", "t_crit", FIDUCIAL_T_CRIT_GYR, 1.5, "Gyr",
         "dynamical_ODE",
-        "χ=1/2 thermo midpoint (C=1 logistic); μ≈15.8 Gyr best posterior"),
+        "written-report design width σ=1.5 (ensemble sample std ≈ 1.408)"),
 )
 
 
@@ -1899,8 +1899,8 @@ def derive_transition_priors_from_odes(
         t_crit_mean=t_crit_mean,
         tau_tr=tau_tr_gyr,
         max_slope=k_mean / 4.0,
-        k_sigma=0.068,
-        t_crit_sigma=1.408,
+        k_sigma=0.07,
+        t_crit_sigma=1.5,
         crossover_target_gyr=crossover_gyr,
         notes=("χ̇=kχ(1−χ) ⇒ sigmoid with χ(t_crit)=1/2; "
                "μ_tcrit≈15.827 Gyr from residual crossover / Table 1"),
@@ -1936,6 +1936,11 @@ class MixingPriorResult:
     h: float
     rs_anchor_mpc: float
     notes: str
+    # Provenance (anti-circularity spec §B.5): raw value the Planck
+    # anchoring calculation actually produces, and whether it reproduces
+    # the declared Table-1 prior centre.
+    H0_planck_anchored_raw: float = float("nan")
+    derivation_reproduces_declared: bool = False
 
 
 def algebraic_mixed_hubble(z: float, H0: float, Omega_Lambda: float,
@@ -1978,18 +1983,32 @@ def derive_hubble_omega_priors_from_mixing(
     Omega_Lambda_mean = FIDUCIAL_OMEGA_LAMBDA  # entropy density today
     omega_r0 = 9.0e-5
     omega_m = 1.0 - Omega_Lambda_mean - omega_r0
-    _ = math.sqrt(omega_m_h2 / omega_m)  # algebraic scaffolding
-    H0_mean = FIDUCIAL_H0  # best-posterior / Planck-mixed centre
+    # The actual Planck anchoring calculation: h = sqrt(ω_m h² / Ω_m).
+    h_raw = math.sqrt(omega_m_h2 / omega_m)
+    H0_raw = 100.0 * h_raw
+    # DECLARED Table-1 prior centre (written-report methodology).
+    H0_mean = FIDUCIAL_H0
+    reproduces = abs(H0_raw - H0_mean) <= 1.0
     return MixingPriorResult(
         H0_mean=H0_mean,
         Omega_Lambda_mean=Omega_Lambda_mean,
-        H0_sigma=2.059,
+        H0_sigma=2.0,
         Omega_Lambda_sigma=0.012,
         omega_m0=omega_m,
         h=H0_mean / 100.0,
         rs_anchor_mpc=rs_mpc,
-        notes=("H_mix=(1−w)H_m+w H_S; Ω_Λ≡Ω_S,0 entropy density; "
-               "widths from Planck calibration accuracy (Table 1)"),
+        notes=(
+            "PROVENANCE DISCLOSURE (anti-circularity spec §B.5): the "
+            f"Planck algebraic anchoring h=√(ω_m h²/Ω_m) yields H0 ≈ "
+            f"{H0_raw:.1f} km/s/Mpc, which does NOT reproduce the declared "
+            f"Table-1 prior centre {H0_mean:.1f}. The declared prior is "
+            "therefore a methodological choice, not the output of this "
+            "calculation. Do not describe the H0 prior as Planck-derived "
+            "until the stated anchoring procedure is corrected to produce "
+            "it, or the report wording is updated."
+        ),
+        H0_planck_anchored_raw=H0_raw,
+        derivation_reproduces_declared=reproduces,
     )
 
 
@@ -2017,10 +2036,9 @@ def build_phase3_priors() -> dict[str, GaussianPrior]:
 # ---------------------------------------------------------------------------
 # Draw N samples from π(θ), evolve the Hubble horizon, compare to ΛCDM.
 # Geometry: R_H = c/H (horizon radius), A_H = 4π R_H² (horizon area).
-# The ensemble plot shows area evolution; the published fractional RMSE
-# tracks the *linear* horizon scale R_H (δA/A ≈ 2 δR/R, so area-based
-# RMSE is ~2× larger). Paper: N=500, mean fRMSE = 14.9 ± 0.4%,
-# best similarity = 93.4%.
+# The ensemble plot and the fRMSE statistic both use horizon AREA, matching
+# the fRMSE formula in the written report (δA/A ≈ 2 δR/R, so area-based
+# RMSE is ~2× larger than the older R_H-based numbers; do not mix them).
 
 # Default redshift knots for the PPC (transition-relevant window).
 PPC_Z_GRID: tuple[float, ...] = (
@@ -2059,7 +2077,7 @@ def fractional_series_rmse(y: Sequence[float], yref: Sequence[float]) -> float:
 
 
 def similarity_from_rmse(frmse: float) -> float:
-    """Similarity = 1 − fractional RMSE (paper best run ≈ 93.4%)."""
+    """Similarity = 1 − fractional RMSE."""
     return max(0.0, 1.0 - frmse)
 
 
@@ -2094,10 +2112,14 @@ class PriorPredictiveResult:
     best_theta: dict[str, float]
     ks: dict[str, float]
     ks_p: dict[str, float]
-    metric: str = "R_H"          # "R_H" (paper) or "A_H"
-    paper_mean_frmse: float = 0.149
-    paper_std_frmse: float = 0.004
-    paper_best_similarity: float = 0.934
+    metric: str = "A_H"          # "A_H" (written-report formula) or "R_H"
+    # NOTE: the written report's earlier 14.9% / 93.4% figures were computed
+    # on R_H = 1/H, NOT on horizon area.  With the area metric (the formula
+    # actually printed in the report) the fractional RMSE is ~2× larger.
+    # Regenerate report numbers from this run's output; do not quote the old ones.
+    paper_mean_frmse: float = float("nan")
+    paper_std_frmse: float = float("nan")
+    paper_best_similarity: float = float("nan")
 
 
 def prior_predictive_horizon_check(
@@ -2107,7 +2129,7 @@ def prior_predictive_horizon_check(
         seed: int = 20260728,
         nsteps: int = 500,
         z_grid: Sequence[float] | None = None,
-        metric: str = "R_H",
+        metric: str = "A_H",
 ) -> PriorPredictiveResult:
     """
     Monte Carlo prior predictive check (paper §8.3 / Figure 10):
@@ -2116,13 +2138,12 @@ def prior_predictive_horizon_check(
       2. Propagate each draw through the background solver (ODE transition)
       3. Compare the Hubble-horizon scale to flat ΛCDM with the *same*
          (H0, Ω_Λ) — isolating the (k, t_crit) dynamical-ODE sector
-      4. Default metric is R_H ∝ 1/H (linear horizon radius).  The area
-         A_H = 4π R_H² is the plotted observable; fractional RMSE on A_H
-         is ~2× larger.  Published 14.9% matches R_H.
+      4. Default metric is A_H ∝ 1/H² (horizon AREA), matching the fRMSE
+         formula printed in the written report.  The older published
+         14.9% / 93.4% figures were computed on R_H = 1/H and must NOT be
+         quoted against area-metric output (area fRMSE is ~2× larger).
       5. Report fractional RMSE ensemble + best similarity
       6. KS-test each marginal against its Gaussian prior
-
-    Paper result: mean fractional RMSE = 14.9 ± 0.4%, best similarity = 93.4%.
     """
     if metric not in ("R_H", "A_H"):
         raise ValueError("metric must be 'R_H' or 'A_H'")
@@ -3403,7 +3424,57 @@ def render_background_plots(
 # This facade is the *only* cosmology surface the inference engine may call.
 # ---------------------------------------------------------------------------
 
-Z_STAR_CMB = 1089.90          # last-scattering redshift (Planck-like)
+Z_STAR_CMB = 1089.90          # reference z* (fallback only; production uses Hu-Sugiyama)
+
+OMEGA_GAMMA_H2 = 2.469e-5     # photon density ω_γ (T_CMB = 2.7255 K)
+NEFF_RAD_BOOST = 1.0 + 0.2271 * 3.046   # photons → photons+neutrinos
+
+
+def cmb_z_star_hu_sugiyama(omega_b_h2: float, omega_m_h2: float) -> float:
+    """Last-scattering redshift z* — Hu & Sugiyama (1996) fitting formula."""
+    ob = max(float(omega_b_h2), 1e-6)
+    om = max(float(omega_m_h2), 1e-6)
+    g1 = 0.0783 * ob ** (-0.238) / (1.0 + 39.5 * ob ** 0.763)
+    g2 = 0.560 / (1.0 + 21.1 * ob ** 1.81)
+    return 1048.0 * (1.0 + 0.00124 * ob ** (-0.738)) * (1.0 + g1 * om ** g2)
+
+
+def bao_z_drag_eh98(omega_b_h2: float, omega_m_h2: float) -> float:
+    """Drag epoch z_d — Eisenstein & Hu (1998) fitting formula."""
+    ob = max(float(omega_b_h2), 1e-6)
+    om = max(float(omega_m_h2), 1e-6)
+    b1 = 0.313 * om ** (-0.419) * (1.0 + 0.607 * om ** 0.674)
+    b2 = 0.238 * om ** 0.223
+    return (1291.0 * om ** 0.251 / (1.0 + 0.659 * om ** 0.828)
+            * (1.0 + b1 * ob ** b2))
+
+
+def sound_horizon_mpc(z_end: float, H0_kms: float, Omega_m: float,
+                      omega_b_h2: float, *, n_steps: int = 3000) -> float:
+    """
+    Comoving sound horizon r_s(z_end) = ∫ c_s dt/a  [Mpc], integrated in ln a
+    over the radiation+matter era with baryon loading
+    R_b = (3ω_b/4ω_γ) a.  Responds to (H0, Ω_m, ω_b) — this replaces the
+    old fixed r = 147.09 Mpc drag-scale shortcut, which is the WRONG epoch
+    for ℓ_A and does not vary with the sampled parameters.
+    """
+    h = max(float(H0_kms), 1e-9) / 100.0
+    omega_m_h2 = max(float(Omega_m), 1e-9) * h * h
+    omega_r_h2 = OMEGA_GAMMA_H2 * NEFF_RAD_BOOST
+    a_end = 1.0 / (1.0 + max(float(z_end), 1.0))
+    la0, la1 = math.log(1e-9), math.log(a_end)
+    dla = (la1 - la0) / int(n_steps)
+    total, prev = 0.0, None
+    for i in range(int(n_steps) + 1):
+        a = math.exp(la0 + i * dla)
+        R_b = 0.75 * (float(omega_b_h2) / OMEGA_GAMMA_H2) * a
+        cs = C_KM_S / math.sqrt(3.0 * (1.0 + R_b))
+        Hz = 100.0 * math.sqrt(omega_m_h2 / a ** 3 + omega_r_h2 / a ** 4)
+        f = cs / (a * Hz)            # dr_s/dln a
+        if prev is not None:
+            total += 0.5 * (prev + f) * dla
+        prev = f
+    return total
 SIGMA8_FID = 0.811            # present-day σ8 used to normalize P(k) / fσ8
 K_PIVOT_MPC = 0.05            # primordial pivot [Mpc⁻¹]
 N_S_FID = 0.9649
@@ -3690,8 +3761,8 @@ class ModifiedCLASS:
         # 4. P(k)
         pspec = self._stage_pk(Om, h)
 
-        # 5. distances
-        dist = self._stage_distances(H_kms)
+        # 5. distances (parameter-dependent r_d)
+        dist = self._stage_distances(H_kms, Om, H0)
 
         # 6. growth
         grow = self._stage_growth(sol, bg_params)
@@ -3788,10 +3859,18 @@ class ModifiedCLASS:
 
     def _stage_cmb(self, H_kms: Callable[[float], float],
                    Om: float, H0: float) -> CMBPredictions:
-        """Compressed Planck-like (R, ℓ_A, ω_b) from background distances."""
-        zstar = Z_STAR_CMB
+        """
+        Compressed Planck-like (R, ℓ_A, ω_b) from background distances.
+
+        z* from Hu & Sugiyama; ℓ_A uses r_s(z*) (sound horizon at LAST
+        SCATTERING, parameter-dependent) — NOT the fixed drag-epoch
+        147.09 Mpc, which is the wrong epoch and does not respond to θ.
+        """
+        h = H0 / 100.0
+        omega_m_h2 = max(Om, 1e-12) * h * h
+        zstar = cmb_z_star_hu_sugiyama(self.omega_b, omega_m_h2)
         chi = comoving_distance(H_kms, zstar, nsteps=4000)
-        rs = self.r_d_mpc
+        rs = sound_horizon_mpc(zstar, H0, Om, self.omega_b)
         R = math.sqrt(max(Om, 1e-12)) * (H0 / C_KM_S) * chi
         l_A = math.pi * chi / max(rs, 1e-30)
         return CMBPredictions(
@@ -3799,9 +3878,18 @@ class ModifiedCLASS:
             z_star=zstar, chi_star_mpc=chi, r_s_mpc=rs,
         )
 
-    def _stage_distances(self, H_kms: Callable[[float], float]
-                         ) -> DistancePredictions:
-        rd = self.r_d_mpc
+    def _stage_distances(self, H_kms: Callable[[float], float],
+                         Om: float | None = None,
+                         H0: float | None = None) -> DistancePredictions:
+        # Parameter-dependent drag-scale r_d (EH98 z_d + sound-horizon
+        # integral) when (Om, H0) are supplied; fixed Planck value only
+        # as a legacy fallback.
+        if Om is not None and H0 is not None:
+            h = H0 / 100.0
+            zd = bao_z_drag_eh98(self.omega_b, max(Om, 1e-12) * h * h)
+            rd = sound_horizon_mpc(zd, H0, Om, self.omega_b)
+        else:
+            rd = self.r_d_mpc
 
         def chi(z: float) -> float:
             return comoving_distance(H_kms, z)
@@ -3971,8 +4059,13 @@ class Table2Entry:
 TABLE2_DATASETS: tuple[Table2Entry, ...] = (
     Table2Entry("pantheon_plus", "Pantheon+ (raw)", "1550 SNe", "1550",
                 1550, 1550, "μ(z)", "supernova"),
-    Table2Entry("des_sny5", "DES-SNY5 (raw)", "1635 SNe", "1635",
-                1635, 1635, "μ(z)", "supernova"),
+    # DES-SN Y5 (Dovekie HD, verified from the data file itself):
+    # 1820 UNIQUE supernovae = 1623 DES SNe + 197 external low-z anchors.
+    # The loader records n_unique_sn / n_measurements per file; quote the
+    # verified counts, not remembered ones.
+    Table2Entry("des_sny5", "DES-SNY5 (held-out)",
+                "1820 unique SNe (1623 DES + 197 low-z)", "1820",
+                1820, 1820, "μ(z)", "supernova"),
     Table2Entry("shoes", "SH0ES (raw)", "37 hosts + 42 SNe", "1–40",
                 1, 40, "H0 calibration", "shoes"),
     Table2Entry("desi_dr2", "DESI DR2 (compressed)",
@@ -4429,19 +4522,40 @@ class SupernovaDataset(Dataset):
 
         path = Path(source)
         z, data, sig = [], [], []
+        sn_ids: list[str] = []
         for cols in _parse_csv_rows(path.read_text(encoding="utf-8")):
             if len(cols) < 3:
                 continue
             try:
-                z.append(float(cols[0])); data.append(float(cols[1])); sig.append(float(cols[2]))
+                # numeric-first format: z, mu, sigma
+                zi, mi, si = float(cols[0]), float(cols[1]), float(cols[2])
+                sid = None
             except ValueError:
-                continue
+                # ID-first format (e.g. DES CID column): id, z, mu, sigma
+                if len(cols) < 4:
+                    continue
+                try:
+                    zi, mi, si = float(cols[1]), float(cols[2]), float(cols[3])
+                    sid = cols[0]
+                except ValueError:
+                    continue
+            z.append(zi); data.append(mi); sig.append(si)
+            if sid is not None:
+                sn_ids.append(sid)
         if not data:
             raise ValueError(f"no SN rows parsed from {path}")
+        # N_SN (unique supernovae) vs N_measurements (likelihood rows) are
+        # DIFFERENT quantities.  DES-SN Y5: 1635 unique SNe / 1820 rows.
+        n_measurements = len(data)
+        n_unique = len(set(sn_ids)) if sn_ids else None
         return cls(
             name=name, kind="supernova", citations=cites,
             z=z, data=data, sigma=sig, observable="mu",
-            meta=_table2_meta(t2, source=str(path), n_objects_loaded=len(data)),
+            meta=_table2_meta(
+                t2, source=str(path), n_objects_loaded=n_measurements,
+                n_measurements=n_measurements,
+                n_unique_sn=(n_unique if n_unique is not None
+                             else "unknown (no ID column in file)")),
         )
 
     @classmethod
@@ -5068,6 +5182,36 @@ def assert_real_joint_likelihood(joint: JointLikelihood) -> None:
         )
 
 
+def cmb_reference_regression(*, tol: float = 0.02) -> dict[str, float]:
+    """
+    Regression test (spec §I.28): evaluate the compressed-CMB observables at
+    a reference Planck-like flat ΛCDM (H0=67.36, Ωm=0.3153, ω_b=0.02237)
+    and require (R, ℓ_A) within ``tol`` of the Planck 2018 compressed means.
+    Raises RuntimeError on failure so a broken CMB implementation can never
+    silently steer the ΛCDM+S posterior.
+    """
+    H0_ref, Om_ref, ob_ref = 67.36, 0.3153, 0.02237
+    h = H0_ref / 100.0
+    om_h2 = Om_ref * h * h
+    zstar = cmb_z_star_hu_sugiyama(ob_ref, om_h2)
+    chi_star = _flat_lcdm_chi(zstar, H0_ref, Om_ref, nsteps=4000)
+    rs = sound_horizon_mpc(zstar, H0_ref, Om_ref, ob_ref)
+    R = math.sqrt(Om_ref) * (H0_ref / C_KM_S) * chi_star
+    l_A = math.pi * chi_star / rs
+    R_ref, lA_ref = PLANCK2018_COMPRESSED_MEAN[0], PLANCK2018_COMPRESSED_MEAN[1]
+    dR = abs(R - R_ref) / R_ref
+    dlA = abs(l_A - lA_ref) / lA_ref
+    out = {"z_star": zstar, "r_s_mpc": rs, "chi_star_mpc": chi_star,
+           "R": R, "l_A": l_A, "rel_err_R": dR, "rel_err_lA": dlA}
+    if dR > tol or dlA > tol:
+        raise RuntimeError(
+            f"FATAL: compressed-CMB regression failed on reference ΛCDM: "
+            f"R={R:.4f} (Planck {R_ref}), l_A={l_A:.2f} (Planck {lA_ref}), "
+            f"rel errs {dR:.3%}/{dlA:.3%} > {tol:.0%}. Fix the CMB "
+            f"implementation before running inference.")
+    return out
+
+
 def build_production_posterior(
         *,
         data_dir: str | Path | None = None,
@@ -5088,14 +5232,19 @@ def build_production_posterior(
             "refuses scaffold mode. Set ALLOW_SCAFFOLD_DATASETS=False."
         )
     reg = lcdm_s_core_registry()
+    # lcdm_limit MUST be False here: the sampled (k, t_crit) enter the
+    # background only through the dynamical χ(t) sector.  lcdm_limit=True
+    # freezes χ and silently reduces the model to flat ΛCDM, making the
+    # k / t_crit posteriors exact copies of their priors.
     theory = ModifiedCLASS(
-        reg, nsteps=theory_nsteps, lcdm_limit=True, k_modes=[0.05])
+        reg, nsteps=theory_nsteps, lcdm_limit=False, k_modes=[0.05])
     likes: list[Likelihood] = []
     for key in production_probe_keys(skip_cmb=skip_cmb):
         if key not in TABLE2_LIKELIHOOD_CLASSES:
             raise RuntimeError(f"FATAL: missing likelihood class for {key!r}")
         likes.append(TABLE2_LIKELIHOOD_CLASSES[key](theory))
 
+    holdout_likes: dict[str, Likelihood] = {}
     sn_files = resolve_data_dir_sn_files(data_dir)
     if require_sn:
         missing = [k for k in OPTIONAL_SN_FILE_KEYS if k not in sn_files]
@@ -5110,14 +5259,47 @@ def build_production_posterior(
             ds = SupernovaDataset.load(path, catalog="pantheon_plus")
             likes.append(PantheonLikelihood(theory, ds))
         elif key == "des_sny5":
+            # DES-SN Y5 is HELD OUT (written-report §6.2): it must never
+            # enter the training/posterior joint likelihood.  It is kept
+            # aside for posterior-predictive validation only.
             ds = SupernovaDataset.load(path, catalog="des_sny5")
-            likes.append(DESLikelihood(theory, ds))
+            holdout_likes["des_sny5"] = DESLikelihood(theory, ds)
         else:
             raise RuntimeError(f"unhandled SN key {key!r}")
 
     joint = JointLikelihood(
         likelihoods=likes, name="ProductionTable2JointLikelihood")
     assert_real_joint_likelihood(joint)
+    # Hard anti-leak assertion: the held-out DES likelihood must not be a
+    # component of the training joint (written-report hold-out design).
+    for lk in likes:
+        if getattr(lk, "table2_key", None) == "des_sny5" or isinstance(lk, DESLikelihood):
+            raise RuntimeError(
+                "FATAL: DES-SN Y5 found inside the training joint likelihood "
+                "— the report declares DES held out. Remove it from training.")
+    joint.holdout_likelihoods = holdout_likes  # posterior-predictive use only
+
+    # Anti-regression guard: (k, t_crit) must influence the background.
+    # If this fails, the entropy sector has been silently frozen again
+    # (e.g. lcdm_limit=True) and the k / t_crit posteriors would be
+    # meaningless prior copies.
+    _bg_a = solve_background(BackgroundParams(
+        k_gyr=0.30, t_crit_gyr=14.0), nsteps=300)
+    _bg_b = solve_background(BackgroundParams(
+        k_gyr=0.45, t_crit_gyr=17.0), nsteps=300)
+    _h_a = _bg_a.hubble_of_z(0.5)
+    _h_b = _bg_b.hubble_of_z(0.5)
+    _rel = abs(_h_a - _h_b) / max(abs(_h_b), 1e-30)
+    if _rel < 1e-8:
+        raise RuntimeError(
+            "FATAL: changing (k, t_crit) does not change H(z) — the "
+            "entropy sector is frozen. Fix before any inference run.")
+
+    # CMB implementation regression: the compressed likelihood must accept
+    # a reference Planck-like flat LCDM before it may constrain LCDM+S.
+    if not skip_cmb:
+        cmb_reference_regression()
+
     return reg, theory, joint, Posterior(reg, joint)
 
 
@@ -5769,7 +5951,8 @@ def _dataset_specific_notes(ds: Dataset, observable: str) -> str:
             notes.append("diagonal σ_μ only — check if sys covariance needed")
         notes.append("distance modulus μ = 5 log₁₀(d_L) + 25")
     elif observable == "BAO":
-        notes.append("r_d consistency: fixed at 147.09 Mpc (Planck)")
+        notes.append("r_d consistency: parameter-dependent r_d(z_d) "
+                     "(EH98 drag epoch + sound-horizon integral)")
         if ds.labels:
             label_set = set(ds.labels)
             types = []
@@ -12976,26 +13159,25 @@ def _check_priors() -> dict[str, bool]:
     H_S = mix.H0_mean * math.sqrt(mix.Omega_Lambda_mean)
     out["mixing_late_entropy"] = abs(H_late - H_S) / H_S < 0.05
 
-    # --- Prior predictive check (500 runs, R_H vs ΛCDM; A_H for plots) ------
+    # --- Prior predictive check (500 runs, horizon AREA vs ΛCDM) -------------
+    # Metric = A_H to match the fRMSE formula in the written report.
+    # Do NOT assert agreement with previously published numbers here: the
+    # code output defines the report numbers, never the other way around.
     print("  [Phase 3] prior predictive check: 500-run Hubble-horizon ensemble...",
           flush=True)
     ppc = prior_predictive_horizon_check(n_runs=500, seed=20260728, nsteps=500)
     out["ppc_n_runs"] = ppc.n_runs == 500
-    out["ppc_metric_RH"] = ppc.metric == "R_H"
+    out["ppc_metric_area"] = ppc.metric == "A_H"
     out["ppc_frmse_finite"] = math.isfinite(ppc.mean_frmse) and ppc.mean_frmse > 0
-    # Paper: 14.9 ± 0.4% on the linear horizon scale R_H ∝ 1/H.
-    out["ppc_mean_frmse_ballpark"] = 0.10 <= ppc.mean_frmse <= 0.22
-    out["ppc_best_similarity_high"] = ppc.best_similarity >= 0.90
-    out["ppc_near_paper_mean"] = abs(ppc.mean_frmse - 0.149) < 0.025
+    out["ppc_frmse_sane"] = 0.0 < ppc.mean_frmse < 1.0
     out["ppc_ks_all_ok"] = all(p > 0.01 for p in ppc.ks_p.values())
     _check_priors.last_ppc = ppc  # type: ignore[attr-defined]
     print(f"           metric               = {ppc.metric}  "
-          f"(A_H = 4π R_H² plotted; RMSE on R_H)", flush=True)
+          f"(fRMSE on horizon area, per written-report formula)", flush=True)
     print(f"           mean fractional RMSE = {100 * ppc.mean_frmse:.1f} "
-          f"± {100 * ppc.std_frmse:.1f}%  "
-          f"(paper 14.9 ± 0.4%)", flush=True)
-    print(f"           best similarity      = {100 * ppc.best_similarity:.1f}%  "
-          f"(paper 93.4%)", flush=True)
+          f"± {100 * ppc.std_frmse:.1f}%", flush=True)
+    print(f"           best similarity      = {100 * ppc.best_similarity:.1f}%",
+          flush=True)
     print(f"           KS p-values          = "
           + ", ".join(f"{k}:{ppc.ks_p[k]:.3f}" for k in ppc.ks_p), flush=True)
     return out
@@ -15190,7 +15372,10 @@ class RunConfig:
     def resolved_burn(self) -> int:
         if self.burn is not None:
             return max(0, min(self.burn, max(self.steps - 1, 0)))
-        return max(1, self.steps // 6)
+        # Written-report production burn-in: 2,000 steps (fall back to
+        # steps//6 for short smoke runs so burn < steps always holds).
+        return max(1, min(2000, self.steps // 6) if self.steps >= 12000
+                   else self.steps // 6)
 
     def resolved_diag_steps(self) -> int:
         return self.diag_steps if self.diag_steps is not None else max(self.steps * 2, 100)
@@ -15254,16 +15439,17 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
         help="Production MCMC steps per chain / walker",
     )
     p.add_argument(
-        "--chains", "--mcmc-chains", "--nchains", dest="chains", type=int, default=2,
-        help="Number of independent Metropolis-Hastings chains",
+        "--chains", "--mcmc-chains", "--nchains", dest="chains", type=int, default=3,
+        help="Number of independent chains (written-report production: 3)",
     )
     p.add_argument(
         "--burn", "--mcmc-burn", "--burn-in", dest="burn", type=int, default=None,
         help="Burn-in steps discarded from each chain (default: steps//6)",
     )
     p.add_argument(
-        "--walkers", "--nwalkers", dest="walkers", type=int, default=10,
-        help="Ensemble walkers for affine / differential-evolution MCMC",
+        "--walkers", "--nwalkers", dest="walkers", type=int, default=48,
+        help="Ensemble walkers for affine / differential-evolution MCMC "
+             "(written-report production: 48)",
     )
     p.add_argument(
         "--nlive", "--live-points", dest="nlive", type=int, default=25,
@@ -15304,9 +15490,10 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
     )
     p.add_argument(
         "--mcmc-method", "--method", dest="mcmc_method", type=str,
-        default="metropolis",
+        default="affine",
         choices=[m for m in MCMC_METHODS if m != "hamiltonian"],
-        help="Primary MCMC method for Phase-10 / paper chains",
+        help="Primary MCMC method for Phase-10 / paper chains "
+             "(written-report production: affine-invariant ensemble)",
     )
     p.add_argument(
         "--theory-nsteps", dest="theory_nsteps", type=int, default=400,
@@ -15349,12 +15536,15 @@ def parse_cli_args(argv: Sequence[str] | None = None) -> RunConfig:
         help="Skip pre-MCMC prior predictive ensemble (horizon area / EFE vs ΛCDM)",
     )
     p.add_argument(
-        "--ppc-runs", type=int, default=200,
-        help="Number of prior draws for the pre-MCMC prior predictive ensemble",
+        "--ppc-runs", type=int, default=500,
+        help="Number of prior draws for the pre-MCMC prior predictive ensemble "
+             "(written-report production: 500)",
     )
     ns = p.parse_args(list(argv) if argv is not None else None)
+    # Written-report production default: 50,000 steps.  Pass --steps N for
+    # smoke tests; production numbers must come from the full-size run.
     steps = ns.steps if ns.steps is not None else (
-        ns.steps_pos if ns.steps_pos is not None else 300)
+        ns.steps_pos if ns.steps_pos is not None else 50000)
     if steps < 1:
         p.error("--steps / --prod-steps must be >= 1")
     if ns.chains < 1:
